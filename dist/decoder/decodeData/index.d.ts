@@ -16,7 +16,7 @@ export interface StructuredAppend {
     totalSequence: number;
     parity: number;
 }
-export declare type Chunks = Array<Chunk | ByteChunk | ECIChunk | StructuredAppend>;
+export type Chunks = Array<Chunk | ByteChunk | ECIChunk | StructuredAppend>;
 export interface DecodedQR {
     text: string;
     bytes: number[];

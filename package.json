@@ -1,8 +1,9 @@
 {
   "name": "jsqr-es6",
   "version": "1.4.0-1",
-  "description": "Fork of jsqr (github.com/cozmo/jsQR) that builds a es-6 target and adds color correction and performance improvements.",
-  "repository": "https://github.com/danimoh/jsQR",
+  "type": "module",
+  "description": "Personal fork of jsQR using own WASM/C++ RS decoder implementation.",
+  "repository": "https://github.com/Xiione/jsQR",
   "main": "./dist/jsQR.js",
   "module": "./dist/jsQR.js",
   "types": "./dist/index.d.ts",
@@ -17,57 +18,36 @@
     },
     {
       "name": "danimoh"
+    },
+    {
+      "name": "Xiione"
     }
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/fs-extra": "^9.0.1",
-    "@types/jest": "^26.0.4",
-    "@types/node": "^16.4.13",
-    "@types/upng-js": "^2.1.2",
-    "fs-extra": "^10.0.0",
-    "full-icu": "^1.3.4",
-    "jest": "^27.0.6",
+    "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.18.98",
+    "@types/upng-js": "^2.1.5",
+    "@vitest/ui": "^1.6.0",
+    "fs-extra": "^10.1.0",
     "rimraf": "^3.0.2",
-    "rollup": "^2.56.1",
-    "rollup-plugin-typescript2": "^0.30.0",
-    "ts-jest": "^27.0.4",
-    "ts-node": "^10.1.0",
-    "tslint": "^6.1.2",
-    "typescript": "^4.3.5",
-    "upng-js": "^2.1.0"
+    "rollup": "^2.79.1",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "ts-jest": "^27.1.5",
+    "ts-node": "^10.9.2",
+    "tslint": "^6.1.3",
+    "typescript": "^4.9.5",
+    "upng-js": "^2.1.0",
+    "vite": "^5.2.13",
+    "vitest": "^1.6.0"
   },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rollup --config",
     "watch": "rollup --config --watch",
-    "test": "env NODE_ICU_DATA=./node_modules/full-icu jest",
+    "test": "vitest",
     "lint": "tslint --project .",
-    "generate-test-data": "env NODE_ICU_DATA=./node_modules/full-icu ts-node --project tests/tsconfig.json tests/generate-test-data.ts"
-  },
-  "jest": {
-    "testRegex": ".*test.ts",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ],
-    "transform": {
-      "^.+\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "globals": {
-      "ts-jest": {
-        "tsConfig": {
-          "noImplicitAny": false,
-          "lib": [
-            "es2017",
-            "dom"
-          ],
-          "types": [
-            "jest",
-            "node"
-          ]
-        }
-      }
-    }
+    "generate-test-data": "ts-node --project tests/tsconfig.json tests/generate-test-data.ts"
   }
 }

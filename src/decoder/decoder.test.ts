@@ -2,6 +2,7 @@ import * as fs from "fs-extra";
 import { loadBinarized } from "../../tests/helpers";
 import { BitMatrix } from "../BitMatrix";
 import { decode } from "./decoder";
+import { expect, describe, it } from "vitest";
 
 describe("decode", () => {
   it("decodes a numeric code", async () => {

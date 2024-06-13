@@ -3,6 +3,7 @@ import * as path from "path";
 import jsQR from "../src";
 import * as helpers from "./helpers";
 import { BitMatrix } from '../src/BitMatrix';
+import { expect, describe, it } from "vitest";
 
 describe("end to end", () => {
   const tests = fs.readdirSync(path.join("tests", "end-to-end")).filter((n) => !n.includes("."));

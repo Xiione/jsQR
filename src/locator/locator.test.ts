@@ -1,5 +1,6 @@
 import {loadBinarized} from "../../tests/helpers";
 import {locate} from "./";
+import { expect, describe, it } from "vitest";
 
 describe("locate", () => {
   it("handles images with missing finder patterns", async () => {
