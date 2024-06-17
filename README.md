@@ -1,5 +1,42 @@
 # jsQR
+## Installation
+The below assumes you're running MacOS on Apple Silicon.
+```
+brew install emscripten
+```
+```
+brew install doctest
+```
+In somewhere you're okay adding directories to your shell PATH from:
+```
+git clone https://github.com/emscripten-core/emsdk.git && cd /emsdk && ./emsdk install latest-arm64-linux && ./emsdk activate latest-arm64-linux
+```
+Add the emsdk binaries directories to your PATH. For example, I run fish shell and I installed emsdk at `~`, so I did
+```
+fish_add_path ~/emsdk
+fish_add_path ~/emsdk/upstream/emscripten
+```
 
+Finally,
+```
+git clone --recurse-submodules https://github.com/Xiione/jsQR.git
+```
+
+Inside the newly cloned repository run
+```
+yarn install
+```
+npm, pnpm, etc likely work as well.
+
+## Testing
+```
+yarn test
+```
+The vitest HTML reporter is enabled by default.
+
+<br>
+
+## Begin original README
 This project is a fork of [cozmo/jsQR](https://github.com/cozmo/jsQR) that provides an es6 build and contains several of the open pull requests of the original project which lately doesn't seem to be maintained much anymore.
 
 A pure javascript QR code reading library.
