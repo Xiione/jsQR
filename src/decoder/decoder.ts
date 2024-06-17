@@ -1,7 +1,7 @@
 import { BitMatrix } from "../BitMatrix";
 import { Point } from "../Point";
 import { decode as decodeData, DecodedQR } from "./decodeData";
-import { decodeWASM as rsDecode } from "./reedsolomon";
+import { decodeWASM as rsDecode, decode as rsDecodeExpected } from "./reedsolomon";
 import { Version, VERSIONS } from "./version";
 
 // tslint:disable:no-bitwise

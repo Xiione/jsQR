@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "es6",
+    "module": "esnext",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "target": "es6",
+    "target": "es2017",
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",

@@ -43,6 +43,7 @@
     "vitest": "^1.6.0"
   },
   "scripts": {
+    "prepare": "cd ./src/decoder/reedsolomon/wasm && make all",
     "prebuild": "rimraf dist",
     "build": "rollup --config",
     "watch": "rollup --config --watch",

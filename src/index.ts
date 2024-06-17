@@ -92,8 +92,10 @@ function mergeObject(target: any, src: any) {
 
 function jsQR(data: Uint8ClampedArray, width: number, height: number, providedOptions: Options = {}): QRCode | null {
   const options = Object.create(null);
-  mergeObject(options, defaultOptions);
-  mergeObject(options, providedOptions);
+  Object.assign(options, defaultOptions);
+  Object.assign(options, providedOptions);
+  // mergeObject(options, defaultOptions);
+  // mergeObject(options, providedOptions);
 
   const tryInvertedFirst = options.inversionAttempts === "onlyInvert" || options.inversionAttempts === "invertFirst";
   const shouldInvert = options.inversionAttempts === "attemptBoth" || tryInvertedFirst;

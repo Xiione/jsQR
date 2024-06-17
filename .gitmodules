@@ -1,0 +1,3 @@
+[submodule "src/decoder/reedsolomon/wasm"]
+	path = src/decoder/reedsolomon/wasm
+	url = https://github.com/Xiione/rsiscool.git
