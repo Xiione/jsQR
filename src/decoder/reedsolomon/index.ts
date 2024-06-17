@@ -1,14 +1,15 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 // @ts-ignore
-import rsiscool from "../../wasm/rsiscool.js"
+import rsiscool from "./wasm/rsiscool.js"
 
 let wasmModule: any;
 
-rsiscool().then((module: any) => {
-  wasmModule = module;
-  module.initGF2E();
-});
+async function initWASM() {
+  wasmModule = await rsiscool();
+}
+if (!wasmModule)
+  await initWASM();
 
 function runEuclideanAlgorithm(field: GenericGF, a: GenericGFPoly, b: GenericGFPoly, R: number): GenericGFPoly[] {
   // Assume a's degree is >= b's
@@ -148,7 +149,5 @@ export function decodeWASM(bytes: number[], twoS: number): Uint8ClampedArray | n
   if (!wasmModule) {
     throw new Error("decodeWASM not yet initialized");
   }
-
-  const input = new Uint8ClampedArray(bytes);
-  return wasmModule.decodeWASM(input, twoS);
+  return wasmModule.decodeWASM(bytes, twoS);
 }
