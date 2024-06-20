@@ -1,7 +1,7 @@
 import { BitMatrix } from "../BitMatrix";
 import { Point } from "../Point";
 import { decode as decodeData, DecodedQR } from "./decodeData";
-import { decodeWASM as rsDecode, decode as rsDecodeExpected } from "./reedsolomon";
+import { decodeWASM as rsDecode, decodeJS as rsDecodeExpected } from "./reedsolomon";
 import { Version, VERSIONS } from "./version";
 
 // tslint:disable:no-bitwise
@@ -308,12 +308,15 @@ function decodeMatrix(matrix: BitMatrix) {
 
   let resultIndex = 0;
   for (const dataBlock of dataBlocks) {
-    const correctedBytes = rsDecode(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
-    if (!correctedBytes) {
+    const decodeRes = rsDecode(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
+    const errors = decodeRes["errors"];
+    const bytesCorrected = decodeRes["bytesCorrected"];
+    if (!bytesCorrected) {
       return null;
     }
+    // console.error(errors);
     for (let i = 0; i < dataBlock.numDataCodewords; i++) {
-      resultBytes[resultIndex++] = correctedBytes[i];
+      resultBytes[resultIndex++] = bytesCorrected["get"](i);
     }
   }
 

@@ -101,7 +101,7 @@ function findErrorMagnitudes(field: GenericGF, errorEvaluator: GenericGFPoly, er
   return result;
 }
 
-export function decode(bytes: number[], twoS: number) {
+export function decodeJS(bytes: number[], twoS: number) {
   const outputBytes = new Uint8ClampedArray(bytes.length);
   outputBytes.set(bytes);
 
@@ -145,9 +145,9 @@ export function decode(bytes: number[], twoS: number) {
   return outputBytes;
 }
 
-export function decodeWASM(bytes: number[], twoS: number): Uint8ClampedArray | null {
+export function decodeWASM(bytes: number[], twoS: number) {
   if (!wasmModule) {
     throw new Error("decodeWASM not yet initialized");
   }
-  return wasmModule.decodeWASM(bytes, twoS);
+  return wasmModule["decodeWASM"](bytes, twoS);
 }
