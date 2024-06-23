@@ -5,11 +5,10 @@ import rsiscool from "./wasm/rsiscool.js"
 
 let wasmModule: any;
 
-async function initWASM() {
-  wasmModule = await rsiscool();
+export async function initDecoder() {
+  if (!wasmModule)
+    wasmModule = await rsiscool();
 }
-if (!wasmModule)
-  await initWASM();
 
 function runEuclideanAlgorithm(field: GenericGF, a: GenericGFPoly, b: GenericGFPoly, R: number): GenericGFPoly[] {
   // Assume a's degree is >= b's

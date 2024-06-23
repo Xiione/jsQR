@@ -41,9 +41,9 @@
     "vitest": "^1.6.0"
   },
   "scripts": {
-    "prepare": "git submodule update --init --recursive --remote && cd ./src/decoder/reedsolomon/wasm && make all",
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf dist && git submodule update --init --recursive --remote && cd ./src/decoder/reedsolomon/wasm && make all",
     "build": "rollup --config",
+    "postbuild": "cp ./src/decoder/reedsolomon/wasm/rsiscool.wasm ./dist/decoder/",
     "watch": "rollup --config --watch",
     "test": "vitest",
     "lint": "tslint --project .",

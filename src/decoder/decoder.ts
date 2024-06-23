@@ -71,7 +71,7 @@ interface FormatInformation {
   dataMask: number;
 }
 
-function buildFunctionPatternMask(version: Version): BitMatrix {
+export function buildFunctionPatternMask(version: Version): BitMatrix {
   const dimension = 17 + 4 * version.versionNumber;
   const matrix = BitMatrix.createEmpty(dimension, dimension);
 

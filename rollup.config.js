@@ -1,14 +1,21 @@
 import typescript from 'rollup-plugin-typescript2';
 
 export default {
-    input: 'src/index.ts',
+    input: {
+        'jsQR': 'src/index.ts',
+        'decoder/decoder': 'src/decoder/decoder.ts',
+        'decoder/reedsolomon': 'src/decoder/reedsolomon/index.ts',
+        'decoder/version': 'src/decoder/version.ts',
+        'locator': 'src/locator/index.ts'
+    },
     output: {
-        file: 'dist/jsQR.js',
+        dir: 'dist',
         format: 'esm',
-        interop: false,
+        entryFileNames: '[name].js',
         sourcemap: true,
     },
     plugins: [
         typescript()
     ]
 };
+
