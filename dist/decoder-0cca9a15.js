@@ -594,4 +594,4 @@ function decode(matrix) {
 }
 
 export { BitMatrix as B, buildFunctionPatternMask as b, decode as d };
-//# sourceMappingURL=decoder-032729cc.js.map
+//# sourceMappingURL=decoder-0cca9a15.js.map

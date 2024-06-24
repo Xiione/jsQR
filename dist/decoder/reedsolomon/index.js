@@ -254,6 +254,7 @@ async function initDecoder() {
     if (!wasmModule)
         wasmModule = await rsiscool();
 }
+await initDecoder();
 function runEuclideanAlgorithm(field, a, b, R) {
     // Assume a's degree is >= b's
     if (a.degree() < b.degree()) {
