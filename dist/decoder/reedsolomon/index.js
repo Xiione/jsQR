@@ -378,4 +378,4 @@ function decodeWASM(bytes, twoS) {
 }
 
 export { decodeJS, decodeWASM, initDecoder };
-//# sourceMappingURL=reedsolomon.js.map
+//# sourceMappingURL=index.js.map

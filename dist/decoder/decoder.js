@@ -1,4 +1,4 @@
-export { b as buildFunctionPatternMask, d as decode } from '../decoder-17f56217.js';
-import './reedsolomon.js';
+export { b as buildFunctionPatternMask, d as decode } from '../decoder-032729cc.js';
+import './reedsolomon/index.js';
 import './version.js';
 //# sourceMappingURL=decoder.js.map

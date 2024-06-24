@@ -1,4 +1,4 @@
-import { decodeWASM } from './decoder/reedsolomon.js';
+import { decodeWASM } from './decoder/reedsolomon/index.js';
 import { VERSIONS } from './decoder/version.js';
 
 class BitMatrix {
@@ -594,4 +594,4 @@ function decode(matrix) {
 }
 
 export { BitMatrix as B, buildFunctionPatternMask as b, decode as d };
-//# sourceMappingURL=decoder-17f56217.js.map
+//# sourceMappingURL=decoder-032729cc.js.map
