@@ -1,4 +1,4 @@
-import { B as BitMatrix, d as decode } from './decoder-032729cc.js';
+import { B as BitMatrix, d as decode } from './decoder-ea6b0171.js';
 import { locate } from './locator.js';
 import './decoder/reedsolomon/index.js';
 import './decoder/version.js';

@@ -2,13 +2,15 @@ import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 // @ts-ignore
 import rsiscool from "./wasm/rsiscool.js"
-import "./wasm/rsiscool.wasm"
 
 let wasmModule: any;
 
 export async function initDecoder() {
-  if (!wasmModule)
-    wasmModule = await rsiscool();
+  wasmModule = await rsiscool();
+}
+
+export function getDecoderInitialized() {
+  return !!wasmModule;
 }
 
 function runEuclideanAlgorithm(field: GenericGF, a: GenericGFPoly, b: GenericGFPoly, R: number): GenericGFPoly[] {

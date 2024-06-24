@@ -1,5 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
-import wasm, { emscripten } from '@rollup/plugin-wasm';
+import copy from 'rollup-plugin-copy'
 
 export default {
     input: {
@@ -17,7 +17,11 @@ export default {
     },
     plugins: [
         typescript(),
-        wasm(emscripten)
+        copy({
+          targets: [
+            { src: './src/decoder/reedsolomon/wasm/rsiscool.wasm', dest: './dist/decoder/reedsolomon/' },
+          ]
+        }),
     ]
 };
 
