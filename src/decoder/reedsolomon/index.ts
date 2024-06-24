@@ -11,8 +11,6 @@ export async function initDecoder() {
     wasmModule = await rsiscool();
 }
 
-await initDecoder();
-
 function runEuclideanAlgorithm(field: GenericGF, a: GenericGFPoly, b: GenericGFPoly, R: number): GenericGFPoly[] {
   // Assume a's degree is >= b's
   if (a.degree() < b.degree()) {

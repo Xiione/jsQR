@@ -1,5 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
-import { wasm } from '@rollup/plugin-wasm';
+import wasm, { emscripten } from '@rollup/plugin-wasm';
 
 export default {
     input: {
@@ -17,7 +17,7 @@ export default {
     },
     plugins: [
         typescript(),
-        wasm()
+        wasm(emscripten)
     ]
 };
 
