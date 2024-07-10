@@ -1,5 +1,5 @@
-import {BitMatrix} from "../BitMatrix";
-import {GreyscaleWeights} from "../index";
+import { BitMatrix } from "../BitMatrix";
+import { GreyscaleWeights } from "../index";
 
 const REGION_SIZE = 8;
 const MIN_DYNAMIC_RANGE = 24;
@@ -28,8 +28,14 @@ class Matrix {
   }
 }
 
-export function binarize(data: Uint8ClampedArray, width: number, height: number, returnInverted: boolean,
-                         greyscaleWeights: GreyscaleWeights, canOverwriteImage: boolean) {
+export function binarize(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  returnInverted: boolean,
+  greyscaleWeights: GreyscaleWeights,
+  canOverwriteImage: boolean,
+) {
   const pixelCount = width * height;
   if (data.length !== pixelCount * 4) {
     throw new Error("Malformed data passed to binarizer.");
@@ -39,7 +45,11 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
   // Convert image to greyscale
   let greyscaleBuffer: Uint8ClampedArray;
   if (canOverwriteImage) {
-    greyscaleBuffer = new Uint8ClampedArray(data.buffer, bufferOffset, pixelCount);
+    greyscaleBuffer = new Uint8ClampedArray(
+      data.buffer,
+      bufferOffset,
+      pixelCount,
+    );
     bufferOffset += pixelCount;
   }
   const greyscalePixels = new Matrix(width, height, greyscaleBuffer);
@@ -50,9 +60,16 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
         const r = data[pixelPosition];
         const g = data[pixelPosition + 1];
         const b = data[pixelPosition + 2];
-        greyscalePixels.set(x, y,
+        greyscalePixels.set(
+          x,
+          y,
           // tslint:disable-next-line no-bitwise
-          (greyscaleWeights.red * r + greyscaleWeights.green * g + greyscaleWeights.blue * b + 128) >> 8);
+          (greyscaleWeights.red * r +
+            greyscaleWeights.green * g +
+            greyscaleWeights.blue * b +
+            128) >>
+            8,
+        );
       }
     }
   } else {
@@ -62,8 +79,13 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
         const r = data[pixelPosition];
         const g = data[pixelPosition + 1];
         const b = data[pixelPosition + 2];
-        greyscalePixels.set(x, y,
-          greyscaleWeights.red * r + greyscaleWeights.green * g + greyscaleWeights.blue * b);
+        greyscalePixels.set(
+          x,
+          y,
+          greyscaleWeights.red * r +
+            greyscaleWeights.green * g +
+            greyscaleWeights.blue * b,
+        );
       }
     }
   }
@@ -73,18 +95,36 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
 
   let blackPointsBuffer: Uint8ClampedArray;
   if (canOverwriteImage) {
-    blackPointsBuffer = new Uint8ClampedArray(data.buffer, bufferOffset, blackPointsCount);
+    blackPointsBuffer = new Uint8ClampedArray(
+      data.buffer,
+      bufferOffset,
+      blackPointsCount,
+    );
     bufferOffset += blackPointsCount;
   }
-  const blackPoints = new Matrix(horizontalRegionCount, verticalRegionCount, blackPointsBuffer);
-  for (let verticalRegion = 0; verticalRegion < verticalRegionCount; verticalRegion++) {
-    for (let hortizontalRegion = 0; hortizontalRegion < horizontalRegionCount; hortizontalRegion++) {
+  const blackPoints = new Matrix(
+    horizontalRegionCount,
+    verticalRegionCount,
+    blackPointsBuffer,
+  );
+  for (
+    let verticalRegion = 0;
+    verticalRegion < verticalRegionCount;
+    verticalRegion++
+  ) {
+    for (
+      let hortizontalRegion = 0;
+      hortizontalRegion < horizontalRegionCount;
+      hortizontalRegion++
+    ) {
       let min = Infinity;
       let max = 0;
       for (let y = 0; y < REGION_SIZE; y++) {
         for (let x = 0; x < REGION_SIZE; x++) {
-          const pixelLumosity =
-            greyscalePixels.get(hortizontalRegion * REGION_SIZE + x, verticalRegion * REGION_SIZE + y);
+          const pixelLumosity = greyscalePixels.get(
+            hortizontalRegion * REGION_SIZE + x,
+            verticalRegion * REGION_SIZE + y,
+          );
           min = Math.min(min, pixelLumosity);
           max = Math.max(max, pixelLumosity);
         }
@@ -114,11 +154,11 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
           // the boundaries is used for the interior.
 
           // The (min < bp) is arbitrary but works better than other heuristics that were tried.
-          const averageNeighborBlackPoint = (
-            blackPoints.get(hortizontalRegion, verticalRegion - 1) +
-            (2 * blackPoints.get(hortizontalRegion - 1, verticalRegion)) +
-            blackPoints.get(hortizontalRegion - 1, verticalRegion - 1)
-          ) / 4;
+          const averageNeighborBlackPoint =
+            (blackPoints.get(hortizontalRegion, verticalRegion - 1) +
+              2 * blackPoints.get(hortizontalRegion - 1, verticalRegion) +
+              blackPoints.get(hortizontalRegion - 1, verticalRegion - 1)) /
+            4;
           if (min < averageNeighborBlackPoint) {
             average = averageNeighborBlackPoint; // no need to apply black bias as already applied to neighbors
           }
@@ -130,7 +170,11 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
 
   let binarized: BitMatrix;
   if (canOverwriteImage) {
-    const binarizedBuffer = new Uint8ClampedArray(data.buffer, bufferOffset, pixelCount);
+    const binarizedBuffer = new Uint8ClampedArray(
+      data.buffer,
+      bufferOffset,
+      pixelCount,
+    );
     bufferOffset += pixelCount;
     binarized = new BitMatrix(binarizedBuffer, width);
   } else {
@@ -140,15 +184,27 @@ export function binarize(data: Uint8ClampedArray, width: number, height: number,
   let inverted: BitMatrix = null;
   if (returnInverted) {
     if (canOverwriteImage) {
-      const invertedBuffer = new Uint8ClampedArray(data.buffer, bufferOffset, pixelCount);
+      const invertedBuffer = new Uint8ClampedArray(
+        data.buffer,
+        bufferOffset,
+        pixelCount,
+      );
       inverted = new BitMatrix(invertedBuffer, width);
     } else {
       inverted = BitMatrix.createEmpty(width, height);
     }
   }
 
-  for (let verticalRegion = 0; verticalRegion < verticalRegionCount; verticalRegion++) {
-    for (let hortizontalRegion = 0; hortizontalRegion < horizontalRegionCount; hortizontalRegion++) {
+  for (
+    let verticalRegion = 0;
+    verticalRegion < verticalRegionCount;
+    verticalRegion++
+  ) {
+    for (
+      let hortizontalRegion = 0;
+      hortizontalRegion < horizontalRegionCount;
+      hortizontalRegion++
+    ) {
       const left = numBetween(hortizontalRegion, 2, horizontalRegionCount - 3);
       const top = numBetween(verticalRegion, 2, verticalRegionCount - 3);
       let sum = 0;

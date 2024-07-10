@@ -41,7 +41,9 @@ export default class GenericGF {
     if (a === 0 || b === 0) {
       return 0;
     }
-    return this.expTable[(this.logTable[a] + this.logTable[b]) % (this.size - 1)];
+    return this.expTable[
+      (this.logTable[a] + this.logTable[b]) % (this.size - 1)
+    ];
   }
 
   public inverse(a: number) {

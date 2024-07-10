@@ -1,10 +1,10 @@
-import {binarize} from "./binarizer";
-import {BitMatrix} from "./BitMatrix";
-import {Chunks} from "./decoder/decodeData";
-import {decode} from "./decoder/decoder";
+import { binarize } from "./binarizer";
+import { BitMatrix } from "./BitMatrix";
+import { Chunks } from "./decoder/decodeData";
+import { decode } from "./decoder/decoder";
 import { Version } from "./decoder/version";
-import {extract} from "./extractor";
-import {locate, Point} from "./locator";
+import { extract } from "./extractor";
+import { locate, Point } from "./locator";
 
 export interface QRCode {
   binaryData: number[];
@@ -36,8 +36,12 @@ function scan(matrix: BitMatrix): QRCode | null {
     const extracted = extract(matrix, location);
     const decoded = decode(extracted.matrix);
     if (decoded) {
-      const topRight = decoded.mirrored ? extracted.mappingFunction(0, location.dimension) : extracted.mappingFunction(location.dimension, 0);
-      const bottomLeft = decoded.mirrored ? extracted.mappingFunction(location.dimension, 0) : extracted.mappingFunction(0, location.dimension);
+      const topRight = decoded.mirrored
+        ? extracted.mappingFunction(0, location.dimension)
+        : extracted.mappingFunction(location.dimension, 0);
+      const bottomLeft = decoded.mirrored
+        ? extracted.mappingFunction(location.dimension, 0)
+        : extracted.mappingFunction(0, location.dimension);
       return {
         binaryData: decoded.bytes,
         data: decoded.text,
@@ -46,7 +50,10 @@ function scan(matrix: BitMatrix): QRCode | null {
         location: {
           topRightCorner: topRight,
           topLeftCorner: extracted.mappingFunction(0, 0),
-          bottomRightCorner: extracted.mappingFunction(location.dimension, location.dimension),
+          bottomRightCorner: extracted.mappingFunction(
+            location.dimension,
+            location.dimension,
+          ),
           bottomLeftCorner: bottomLeft,
 
           topRightFinderPattern: location.topRight,
@@ -63,7 +70,11 @@ function scan(matrix: BitMatrix): QRCode | null {
 }
 
 export interface Options {
-  inversionAttempts?: "dontInvert" | "onlyInvert" | "attemptBoth" | "invertFirst";
+  inversionAttempts?:
+    | "dontInvert"
+    | "onlyInvert"
+    | "attemptBoth"
+    | "invertFirst";
   greyScaleWeights?: GreyscaleWeights;
   canOverwriteImage?: boolean;
 }
@@ -87,24 +98,43 @@ const defaultOptions: Options = {
 };
 
 function mergeObject(target: any, src: any) {
-  Object.keys(src).forEach(opt => { // Sad implementation of Object.assign since we target es5 not es6
+  Object.keys(src).forEach((opt) => {
+    // Sad implementation of Object.assign since we target es5 not es6
     target[opt] = src[opt];
   });
 }
 
-function jsQR(data: Uint8ClampedArray, width: number, height: number, providedOptions: Options = {}): QRCode | null {
+function jsQR(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  providedOptions: Options = {},
+): QRCode | null {
   const options = Object.create(null);
   Object.assign(options, defaultOptions);
   Object.assign(options, providedOptions);
   // mergeObject(options, defaultOptions);
   // mergeObject(options, providedOptions);
 
-  const tryInvertedFirst = options.inversionAttempts === "onlyInvert" || options.inversionAttempts === "invertFirst";
-  const shouldInvert = options.inversionAttempts === "attemptBoth" || tryInvertedFirst;
-  const {binarized, inverted} = binarize(data, width, height, shouldInvert, options.greyScaleWeights,
-      options.canOverwriteImage);
+  const tryInvertedFirst =
+    options.inversionAttempts === "onlyInvert" ||
+    options.inversionAttempts === "invertFirst";
+  const shouldInvert =
+    options.inversionAttempts === "attemptBoth" || tryInvertedFirst;
+  const { binarized, inverted } = binarize(
+    data,
+    width,
+    height,
+    shouldInvert,
+    options.greyScaleWeights,
+    options.canOverwriteImage,
+  );
   let result = scan(tryInvertedFirst ? inverted : binarized);
-  if (!result && (options.inversionAttempts === "attemptBoth" || options.inversionAttempts === "invertFirst")) {
+  if (
+    !result &&
+    (options.inversionAttempts === "attemptBoth" ||
+      options.inversionAttempts === "invertFirst")
+  ) {
     result = scan(tryInvertedFirst ? binarized : inverted);
   }
   return result;

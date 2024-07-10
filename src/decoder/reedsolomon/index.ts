@@ -1,7 +1,7 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 // @ts-ignore
-import rsiscool from "./wasm/rsiscool.js"
+import rsiscool from "./wasm/rsiscool.js";
 
 let wasmModule: any;
 
@@ -13,7 +13,12 @@ export function getDecoderInitialized() {
   return !!wasmModule;
 }
 
-function runEuclideanAlgorithm(field: GenericGF, a: GenericGFPoly, b: GenericGFPoly, R: number): GenericGFPoly[] {
+function runEuclideanAlgorithm(
+  field: GenericGF,
+  a: GenericGFPoly,
+  b: GenericGFPoly,
+  R: number,
+): GenericGFPoly[] {
   // Assume a's degree is >= b's
   if (a.degree() < b.degree()) {
     [a, b] = [b, a];
@@ -63,7 +68,10 @@ function runEuclideanAlgorithm(field: GenericGF, a: GenericGFPoly, b: GenericGFP
   return [t.multiply(inverse), r.multiply(inverse)];
 }
 
-function findErrorLocations(field: GenericGF, errorLocator: GenericGFPoly): number[] {
+function findErrorLocations(
+  field: GenericGF,
+  errorLocator: GenericGFPoly,
+): number[] {
   // This is a direct application of Chien's search
   const numErrors = errorLocator.degree();
   if (numErrors === 1) {
@@ -83,7 +91,11 @@ function findErrorLocations(field: GenericGF, errorLocator: GenericGFPoly): numb
   return result;
 }
 
-function findErrorMagnitudes(field: GenericGF, errorEvaluator: GenericGFPoly, errorLocations: number[]): number[] {
+function findErrorMagnitudes(
+  field: GenericGF,
+  errorEvaluator: GenericGFPoly,
+  errorLocations: number[],
+): number[] {
   // This is directly applying Forney's Formula
   const s = errorLocations.length;
   const result: number[] = new Array(s);
@@ -92,10 +104,16 @@ function findErrorMagnitudes(field: GenericGF, errorEvaluator: GenericGFPoly, er
     let denominator = 1;
     for (let j = 0; j < s; j++) {
       if (i !== j) {
-        denominator = field.multiply(denominator, addOrSubtractGF(1, field.multiply(errorLocations[j], xiInverse)));
+        denominator = field.multiply(
+          denominator,
+          addOrSubtractGF(1, field.multiply(errorLocations[j], xiInverse)),
+        );
       }
     }
-    result[i] = field.multiply(errorEvaluator.evaluateAt(xiInverse), field.inverse(denominator));
+    result[i] = field.multiply(
+      errorEvaluator.evaluateAt(xiInverse),
+      field.inverse(denominator),
+    );
     if (field.generatorBase !== 0) {
       result[i] = field.multiply(result[i], xiInverse);
     }
@@ -107,7 +125,7 @@ export function decodeJS(bytes: number[], twoS: number) {
   const outputBytes = new Uint8ClampedArray(bytes.length);
   outputBytes.set(bytes);
 
-  const field = new GenericGF(0x011D, 256, 0); // x^8 + x^4 + x^3 + x^2 + 1
+  const field = new GenericGF(0x011d, 256, 0); // x^8 + x^4 + x^3 + x^2 + 1
   const poly = new GenericGFPoly(field, outputBytes);
 
   const syndromeCoefficients = new Uint8ClampedArray(twoS);
@@ -125,7 +143,12 @@ export function decodeJS(bytes: number[], twoS: number) {
 
   const syndrome = new GenericGFPoly(field, syndromeCoefficients);
 
-  const sigmaOmega = runEuclideanAlgorithm(field, field.buildMonomial(twoS, 1), syndrome, twoS);
+  const sigmaOmega = runEuclideanAlgorithm(
+    field,
+    field.buildMonomial(twoS, 1),
+    syndrome,
+    twoS,
+  );
   if (sigmaOmega === null) {
     return null;
   }
@@ -135,13 +158,20 @@ export function decodeJS(bytes: number[], twoS: number) {
     return null;
   }
 
-  const errorMagnitudes = findErrorMagnitudes(field, sigmaOmega[1], errorLocations);
+  const errorMagnitudes = findErrorMagnitudes(
+    field,
+    sigmaOmega[1],
+    errorLocations,
+  );
   for (let i = 0; i < errorLocations.length; i++) {
     const position = outputBytes.length - 1 - field.log(errorLocations[i]);
     if (position < 0) {
       return null;
     }
-    outputBytes[position] = addOrSubtractGF(outputBytes[position], errorMagnitudes[i]);
+    outputBytes[position] = addOrSubtractGF(
+      outputBytes[position],
+      errorMagnitudes[i],
+    );
   }
 
   return outputBytes;

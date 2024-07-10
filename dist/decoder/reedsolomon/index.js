@@ -8,7 +8,8 @@ class GenericGFPoly {
         if (coefficientsLength > 1 && coefficients[0] === 0) {
             // Leading term must be non-zero for anything except the constant polynomial "0"
             let firstNonZero = 1;
-            while (firstNonZero < coefficientsLength && coefficients[firstNonZero] === 0) {
+            while (firstNonZero < coefficientsLength &&
+                coefficients[firstNonZero] === 0) {
                 firstNonZero++;
             }
             if (firstNonZero === coefficientsLength) {
@@ -44,7 +45,10 @@ class GenericGFPoly {
         let smallerCoefficients = this.coefficients;
         let largerCoefficients = other.coefficients;
         if (smallerCoefficients.length > largerCoefficients.length) {
-            [smallerCoefficients, largerCoefficients] = [largerCoefficients, smallerCoefficients];
+            [smallerCoefficients, largerCoefficients] = [
+                largerCoefficients,
+                smallerCoefficients,
+            ];
         }
         const sumDiff = new Uint8ClampedArray(largerCoefficients.length);
         const lengthDiff = largerCoefficients.length - smallerCoefficients.length;
@@ -339,7 +343,7 @@ function findErrorMagnitudes(field, errorEvaluator, errorLocations) {
 function decodeJS(bytes, twoS) {
     const outputBytes = new Uint8ClampedArray(bytes.length);
     outputBytes.set(bytes);
-    const field = new GenericGF(0x011D, 256, 0); // x^8 + x^4 + x^3 + x^2 + 1
+    const field = new GenericGF(0x011d, 256, 0); // x^8 + x^4 + x^3 + x^2 + 1
     const poly = new GenericGFPoly(field, outputBytes);
     const syndromeCoefficients = new Uint8ClampedArray(twoS);
     let error = false;

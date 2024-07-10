@@ -19,7 +19,7 @@ class BitStream {
             const bitsLeft = 8 - this.bitOffset;
             const toRead = numBits < bitsLeft ? numBits : bitsLeft;
             const bitsToNotRead = bitsLeft - toRead;
-            const mask = (0xFF >> (8 - toRead)) << bitsToNotRead;
+            const mask = (0xff >> (8 - toRead)) << bitsToNotRead;
             result = (this.bytes[this.byteOffset] & mask) >> bitsToNotRead;
             numBits -= toRead;
             this.bitOffset += toRead;
@@ -31,15 +31,17 @@ class BitStream {
         // Next read whole bytes
         if (numBits > 0) {
             while (numBits >= 8) {
-                result = (result << 8) | (this.bytes[this.byteOffset] & 0xFF);
+                result = (result << 8) | (this.bytes[this.byteOffset] & 0xff);
                 this.byteOffset++;
                 numBits -= 8;
             }
             // Finally read a partial byte
             if (numBits > 0) {
                 const bitsToNotRead = 8 - numBits;
-                const mask = (0xFF >> bitsToNotRead) << bitsToNotRead;
-                result = (result << numBits) | ((this.bytes[this.byteOffset] & mask) >> bitsToNotRead);
+                const mask = (0xff >> bitsToNotRead) << bitsToNotRead;
+                result =
+                    (result << numBits) |
+                        ((this.bytes[this.byteOffset] & mask) >> bitsToNotRead);
                 this.bitOffset += numBits;
             }
         }
@@ -112,11 +114,51 @@ function decodeNumeric(stream, size) {
     return { bytes, text };
 }
 const AlphanumericCharacterCodes = [
-    "0", "1", "2", "3", "4", "5", "6", "7", "8",
-    "9", "A", "B", "C", "D", "E", "F", "G", "H",
-    "I", "J", "K", "L", "M", "N", "O", "P", "Q",
-    "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-    " ", "$", "%", "*", "+", "-", ".", "/", ":",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    " ",
+    "$",
+    "%",
+    "*",
+    "+",
+    "-",
+    ".",
+    "/",
+    ":",
 ];
 function decodeAlphanumeric(stream, size) {
     const bytes = [];
@@ -148,7 +190,7 @@ function decodeByte(stream, size) {
         bytes.push(b);
     }
     try {
-        text += decodeURIComponent(bytes.map(b => `%${("0" + b.toString(16)).substr(-2)}`).join(""));
+        text += decodeURIComponent(bytes.map((b) => `%${("0" + b.toString(16)).substr(-2)}`).join(""));
     }
     catch (_a) {
         // failed to decode
@@ -161,14 +203,14 @@ function decodeKanji(stream, size) {
     const length = stream.readBits(characterCountSize);
     for (let i = 0; i < length; i++) {
         const k = stream.readBits(13);
-        let c = (Math.floor(k / 0xC0) << 8) | (k % 0xC0);
-        if (c < 0x1F00) {
+        let c = (Math.floor(k / 0xc0) << 8) | k % 0xc0;
+        if (c < 0x1f00) {
             c += 0x8140;
         }
         else {
-            c += 0xC140;
+            c += 0xc140;
         }
-        bytes.push(c >> 8, c & 0xFF);
+        bytes.push(c >> 8, c & 0xff);
     }
     const text = new TextDecoder("shift-jis").decode(Uint8Array.from(bytes));
     return { bytes, text };
@@ -286,46 +328,46 @@ function pushBit(bit, byte) {
 const FORMAT_INFO_TABLE = [
     { bits: 0x5412, formatInfo: { errorCorrectionLevel: 1, dataMask: 0 } },
     { bits: 0x5125, formatInfo: { errorCorrectionLevel: 1, dataMask: 1 } },
-    { bits: 0x5E7C, formatInfo: { errorCorrectionLevel: 1, dataMask: 2 } },
-    { bits: 0x5B4B, formatInfo: { errorCorrectionLevel: 1, dataMask: 3 } },
-    { bits: 0x45F9, formatInfo: { errorCorrectionLevel: 1, dataMask: 4 } },
-    { bits: 0x40CE, formatInfo: { errorCorrectionLevel: 1, dataMask: 5 } },
-    { bits: 0x4F97, formatInfo: { errorCorrectionLevel: 1, dataMask: 6 } },
-    { bits: 0x4AA0, formatInfo: { errorCorrectionLevel: 1, dataMask: 7 } },
-    { bits: 0x77C4, formatInfo: { errorCorrectionLevel: 0, dataMask: 0 } },
-    { bits: 0x72F3, formatInfo: { errorCorrectionLevel: 0, dataMask: 1 } },
-    { bits: 0x7DAA, formatInfo: { errorCorrectionLevel: 0, dataMask: 2 } },
-    { bits: 0x789D, formatInfo: { errorCorrectionLevel: 0, dataMask: 3 } },
-    { bits: 0x662F, formatInfo: { errorCorrectionLevel: 0, dataMask: 4 } },
+    { bits: 0x5e7c, formatInfo: { errorCorrectionLevel: 1, dataMask: 2 } },
+    { bits: 0x5b4b, formatInfo: { errorCorrectionLevel: 1, dataMask: 3 } },
+    { bits: 0x45f9, formatInfo: { errorCorrectionLevel: 1, dataMask: 4 } },
+    { bits: 0x40ce, formatInfo: { errorCorrectionLevel: 1, dataMask: 5 } },
+    { bits: 0x4f97, formatInfo: { errorCorrectionLevel: 1, dataMask: 6 } },
+    { bits: 0x4aa0, formatInfo: { errorCorrectionLevel: 1, dataMask: 7 } },
+    { bits: 0x77c4, formatInfo: { errorCorrectionLevel: 0, dataMask: 0 } },
+    { bits: 0x72f3, formatInfo: { errorCorrectionLevel: 0, dataMask: 1 } },
+    { bits: 0x7daa, formatInfo: { errorCorrectionLevel: 0, dataMask: 2 } },
+    { bits: 0x789d, formatInfo: { errorCorrectionLevel: 0, dataMask: 3 } },
+    { bits: 0x662f, formatInfo: { errorCorrectionLevel: 0, dataMask: 4 } },
     { bits: 0x6318, formatInfo: { errorCorrectionLevel: 0, dataMask: 5 } },
-    { bits: 0x6C41, formatInfo: { errorCorrectionLevel: 0, dataMask: 6 } },
+    { bits: 0x6c41, formatInfo: { errorCorrectionLevel: 0, dataMask: 6 } },
     { bits: 0x6976, formatInfo: { errorCorrectionLevel: 0, dataMask: 7 } },
     { bits: 0x1689, formatInfo: { errorCorrectionLevel: 3, dataMask: 0 } },
-    { bits: 0x13BE, formatInfo: { errorCorrectionLevel: 3, dataMask: 1 } },
-    { bits: 0x1CE7, formatInfo: { errorCorrectionLevel: 3, dataMask: 2 } },
-    { bits: 0x19D0, formatInfo: { errorCorrectionLevel: 3, dataMask: 3 } },
+    { bits: 0x13be, formatInfo: { errorCorrectionLevel: 3, dataMask: 1 } },
+    { bits: 0x1ce7, formatInfo: { errorCorrectionLevel: 3, dataMask: 2 } },
+    { bits: 0x19d0, formatInfo: { errorCorrectionLevel: 3, dataMask: 3 } },
     { bits: 0x0762, formatInfo: { errorCorrectionLevel: 3, dataMask: 4 } },
     { bits: 0x0255, formatInfo: { errorCorrectionLevel: 3, dataMask: 5 } },
-    { bits: 0x0D0C, formatInfo: { errorCorrectionLevel: 3, dataMask: 6 } },
-    { bits: 0x083B, formatInfo: { errorCorrectionLevel: 3, dataMask: 7 } },
-    { bits: 0x355F, formatInfo: { errorCorrectionLevel: 2, dataMask: 0 } },
+    { bits: 0x0d0c, formatInfo: { errorCorrectionLevel: 3, dataMask: 6 } },
+    { bits: 0x083b, formatInfo: { errorCorrectionLevel: 3, dataMask: 7 } },
+    { bits: 0x355f, formatInfo: { errorCorrectionLevel: 2, dataMask: 0 } },
     { bits: 0x3068, formatInfo: { errorCorrectionLevel: 2, dataMask: 1 } },
-    { bits: 0x3F31, formatInfo: { errorCorrectionLevel: 2, dataMask: 2 } },
-    { bits: 0x3A06, formatInfo: { errorCorrectionLevel: 2, dataMask: 3 } },
-    { bits: 0x24B4, formatInfo: { errorCorrectionLevel: 2, dataMask: 4 } },
+    { bits: 0x3f31, formatInfo: { errorCorrectionLevel: 2, dataMask: 2 } },
+    { bits: 0x3a06, formatInfo: { errorCorrectionLevel: 2, dataMask: 3 } },
+    { bits: 0x24b4, formatInfo: { errorCorrectionLevel: 2, dataMask: 4 } },
     { bits: 0x2183, formatInfo: { errorCorrectionLevel: 2, dataMask: 5 } },
-    { bits: 0x2EDA, formatInfo: { errorCorrectionLevel: 2, dataMask: 6 } },
-    { bits: 0x2BED, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
+    { bits: 0x2eda, formatInfo: { errorCorrectionLevel: 2, dataMask: 6 } },
+    { bits: 0x2bed, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
 ];
 const DATA_MASKS = [
-    (p) => ((p.y + p.x) % 2) === 0,
-    (p) => (p.y % 2) === 0,
+    (p) => (p.y + p.x) % 2 === 0,
+    (p) => p.y % 2 === 0,
     (p) => p.x % 3 === 0,
     (p) => (p.y + p.x) % 3 === 0,
     (p) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
     (p) => ((p.x * p.y) % 2) + ((p.x * p.y) % 3) === 0,
-    (p) => ((((p.y * p.x) % 2) + (p.y * p.x) % 3) % 2) === 0,
-    (p) => ((((p.y + p.x) % 2) + (p.y * p.x) % 3) % 2) === 0,
+    (p) => (((p.y * p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+    (p) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
 ];
 function buildFunctionPatternMask(version) {
     const dimension = 17 + 4 * version.versionNumber;
@@ -336,7 +378,9 @@ function buildFunctionPatternMask(version) {
     // Alignment patterns
     for (const x of version.alignmentPatternCenters) {
         for (const y of version.alignmentPatternCenters) {
-            if (!(x === 6 && y === 6 || x === 6 && y === dimension - 7 || x === dimension - 7 && y === 6)) {
+            if (!((x === 6 && y === 6) ||
+                (x === 6 && y === dimension - 7) ||
+                (x === dimension - 7 && y === 6))) {
                 matrix.setRegion(x - 2, y - 2, 5, 5, true);
             }
         }
@@ -359,7 +403,8 @@ function readCodewords(matrix, version, formatInfo) {
     // Read columns in pairs, from right to left
     let readingUp = true;
     for (let columnIndex = dimension - 1; columnIndex > 0; columnIndex -= 2) {
-        if (columnIndex === 6) { // Skip whole column with vertical alignment pattern;
+        if (columnIndex === 6) {
+            // Skip whole column with vertical alignment pattern;
             columnIndex--;
         }
         for (let i = 0; i < dimension; i++) {
@@ -373,7 +418,8 @@ function readCodewords(matrix, version, formatInfo) {
                         bit = !bit;
                     }
                     currentByte = pushBit(bit, currentByte);
-                    if (bitsRead === 8) { // Whole bytes
+                    if (bitsRead === 8) {
+                        // Whole bytes
                         codewords.push(currentByte);
                         bitsRead = 0;
                         currentByte = 0;
@@ -388,7 +434,8 @@ function readCodewords(matrix, version, formatInfo) {
 function readVersion(matrix) {
     const dimension = matrix.height;
     const provisionalVersion = Math.floor((dimension - 17) / 4);
-    if (provisionalVersion <= 6) { // 6 and under dont have version info in the QR code
+    if (provisionalVersion <= 6) {
+        // 6 and under dont have version info in the QR code
         return VERSIONS[provisionalVersion - 1];
     }
     let topRightVersionBits = 0;
@@ -406,7 +453,8 @@ function readVersion(matrix) {
     let bestDifference = Infinity;
     let bestVersion;
     for (const version of VERSIONS) {
-        if (version.infoBits === topRightVersionBits || version.infoBits === bottomLeftVersionBits) {
+        if (version.infoBits === topRightVersionBits ||
+            version.infoBits === bottomLeftVersionBits) {
             return version;
         }
         let difference = numBitsDiffering(topRightVersionBits, version.infoBits);
@@ -429,27 +477,32 @@ function readVersion(matrix) {
 function readFormatInformation(matrix) {
     let topLeftFormatInfoBits = 0;
     for (let x = 0; x <= 8; x++) {
-        if (x !== 6) { // Skip timing pattern bit
+        if (x !== 6) {
+            // Skip timing pattern bit
             topLeftFormatInfoBits = pushBit(matrix.get(x, 8), topLeftFormatInfoBits);
         }
     }
     for (let y = 7; y >= 0; y--) {
-        if (y !== 6) { // Skip timing pattern bit
+        if (y !== 6) {
+            // Skip timing pattern bit
             topLeftFormatInfoBits = pushBit(matrix.get(8, y), topLeftFormatInfoBits);
         }
     }
     const dimension = matrix.height;
     let topRightBottomRightFormatInfoBits = 0;
-    for (let y = dimension - 1; y >= dimension - 7; y--) { // bottom left
+    for (let y = dimension - 1; y >= dimension - 7; y--) {
+        // bottom left
         topRightBottomRightFormatInfoBits = pushBit(matrix.get(8, y), topRightBottomRightFormatInfoBits);
     }
-    for (let x = dimension - 8; x < dimension; x++) { // top right
+    for (let x = dimension - 8; x < dimension; x++) {
+        // top right
         topRightBottomRightFormatInfoBits = pushBit(matrix.get(x, 8), topRightBottomRightFormatInfoBits);
     }
     let bestDifference = Infinity;
     let bestFormatInfo = null;
     for (const { bits, formatInfo } of FORMAT_INFO_TABLE) {
-        if (bits === topLeftFormatInfoBits || bits === topRightBottomRightFormatInfoBits) {
+        if (bits === topLeftFormatInfoBits ||
+            bits === topRightBottomRightFormatInfoBits) {
             return formatInfo;
         }
         let difference = numBitsDiffering(topLeftFormatInfoBits, bits);
@@ -457,7 +510,8 @@ function readFormatInformation(matrix) {
             bestFormatInfo = formatInfo;
             bestDifference = difference;
         }
-        if (topLeftFormatInfoBits !== topRightBottomRightFormatInfoBits) { // also try the other option
+        if (topLeftFormatInfoBits !== topRightBottomRightFormatInfoBits) {
+            // also try the other option
             difference = numBitsDiffering(topRightBottomRightFormatInfoBits, bits);
             if (difference < bestDifference) {
                 bestFormatInfo = formatInfo;
@@ -475,10 +529,14 @@ function getDataBlocks(codewords, version, ecLevel) {
     const ecInfo = version.errorCorrectionLevels[ecLevel];
     const dataBlocks = [];
     let totalCodewords = 0;
-    ecInfo.ecBlocks.forEach(block => {
+    ecInfo.ecBlocks.forEach((block) => {
         for (let i = 0; i < block.numBlocks; i++) {
-            dataBlocks.push({ numDataCodewords: block.dataCodewordsPerBlock, codewords: [] });
-            totalCodewords += block.dataCodewordsPerBlock + ecInfo.ecCodewordsPerBlock;
+            dataBlocks.push({
+                numDataCodewords: block.dataCodewordsPerBlock,
+                codewords: [],
+            });
+            totalCodewords +=
+                block.dataCodewordsPerBlock + ecInfo.ecCodewordsPerBlock;
         }
     });
     // In some cases the QR code will be malformed enough that we pull off more or less than we should.

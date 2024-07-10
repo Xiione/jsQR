@@ -49,7 +49,11 @@ function binarize(data, width, height, returnInverted, greyscaleWeights, canOver
                 const b = data[pixelPosition + 2];
                 greyscalePixels.set(x, y, 
                 // tslint:disable-next-line no-bitwise
-                (greyscaleWeights.red * r + greyscaleWeights.green * g + greyscaleWeights.blue * b + 128) >> 8);
+                (greyscaleWeights.red * r +
+                    greyscaleWeights.green * g +
+                    greyscaleWeights.blue * b +
+                    128) >>
+                    8);
             }
         }
     }
@@ -60,7 +64,9 @@ function binarize(data, width, height, returnInverted, greyscaleWeights, canOver
                 const r = data[pixelPosition];
                 const g = data[pixelPosition + 1];
                 const b = data[pixelPosition + 2];
-                greyscalePixels.set(x, y, greyscaleWeights.red * r + greyscaleWeights.green * g + greyscaleWeights.blue * b);
+                greyscalePixels.set(x, y, greyscaleWeights.red * r +
+                    greyscaleWeights.green * g +
+                    greyscaleWeights.blue * b);
             }
         }
     }
@@ -108,8 +114,9 @@ function binarize(data, width, height, returnInverted, greyscaleWeights, canOver
                     // the boundaries is used for the interior.
                     // The (min < bp) is arbitrary but works better than other heuristics that were tried.
                     const averageNeighborBlackPoint = (blackPoints.get(hortizontalRegion, verticalRegion - 1) +
-                        (2 * blackPoints.get(hortizontalRegion - 1, verticalRegion)) +
-                        blackPoints.get(hortizontalRegion - 1, verticalRegion - 1)) / 4;
+                        2 * blackPoints.get(hortizontalRegion - 1, verticalRegion) +
+                        blackPoints.get(hortizontalRegion - 1, verticalRegion - 1)) /
+                        4;
                     if (min < averageNeighborBlackPoint) {
                         average = averageNeighborBlackPoint; // no need to apply black bias as already applied to neighbors
                     }
@@ -170,7 +177,8 @@ function binarize(data, width, height, returnInverted, greyscaleWeights, canOver
 function squareToQuadrilateral(p1, p2, p3, p4) {
     const dx3 = p1.x - p2.x + p3.x - p4.x;
     const dy3 = p1.y - p2.y + p3.y - p4.y;
-    if (dx3 === 0 && dy3 === 0) { // Affine
+    if (dx3 === 0 && dy3 === 0) {
+        // Affine
         return {
             a11: p2.x - p1.x,
             a12: p2.y - p1.y,
@@ -267,8 +275,12 @@ function scan(matrix) {
         const extracted = extract(matrix, location);
         const decoded = decode(extracted.matrix);
         if (decoded) {
-            const topRight = decoded.mirrored ? extracted.mappingFunction(0, location.dimension) : extracted.mappingFunction(location.dimension, 0);
-            const bottomLeft = decoded.mirrored ? extracted.mappingFunction(location.dimension, 0) : extracted.mappingFunction(0, location.dimension);
+            const topRight = decoded.mirrored
+                ? extracted.mappingFunction(0, location.dimension)
+                : extracted.mappingFunction(location.dimension, 0);
+            const bottomLeft = decoded.mirrored
+                ? extracted.mappingFunction(location.dimension, 0)
+                : extracted.mappingFunction(0, location.dimension);
             return {
                 binaryData: decoded.bytes,
                 data: decoded.text,
@@ -306,11 +318,14 @@ function jsQR(data, width, height, providedOptions = {}) {
     Object.assign(options, providedOptions);
     // mergeObject(options, defaultOptions);
     // mergeObject(options, providedOptions);
-    const tryInvertedFirst = options.inversionAttempts === "onlyInvert" || options.inversionAttempts === "invertFirst";
+    const tryInvertedFirst = options.inversionAttempts === "onlyInvert" ||
+        options.inversionAttempts === "invertFirst";
     const shouldInvert = options.inversionAttempts === "attemptBoth" || tryInvertedFirst;
     const { binarized, inverted } = binarize(data, width, height, shouldInvert, options.greyScaleWeights, options.canOverwriteImage);
     let result = scan(tryInvertedFirst ? inverted : binarized);
-    if (!result && (options.inversionAttempts === "attemptBoth" || options.inversionAttempts === "invertFirst")) {
+    if (!result &&
+        (options.inversionAttempts === "attemptBoth" ||
+            options.inversionAttempts === "invertFirst")) {
         result = scan(tryInvertedFirst ? binarized : inverted);
     }
     return result;

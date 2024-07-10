@@ -1,5 +1,5 @@
-import {BitMatrix} from "../BitMatrix";
-import {Point, QRLocation} from "../locator";
+import { BitMatrix } from "../BitMatrix";
+import { Point, QRLocation } from "../locator";
 
 interface PerspectiveTransform {
   a11: number;
@@ -13,10 +13,16 @@ interface PerspectiveTransform {
   a33: number;
 }
 
-function squareToQuadrilateral(p1: Point, p2: Point, p3: Point, p4: Point): PerspectiveTransform {
+function squareToQuadrilateral(
+  p1: Point,
+  p2: Point,
+  p3: Point,
+  p4: Point,
+): PerspectiveTransform {
   const dx3 = p1.x - p2.x + p3.x - p4.x;
   const dy3 = p1.y - p2.y + p3.y - p4.y;
-  if (dx3 === 0 && dy3 === 0) { // Affine
+  if (dx3 === 0 && dy3 === 0) {
+    // Affine
     return {
       a11: p2.x - p1.x,
       a12: p2.y - p1.y,
@@ -50,7 +56,12 @@ function squareToQuadrilateral(p1: Point, p2: Point, p3: Point, p4: Point): Pers
   }
 }
 
-function quadrilateralToSquare(p1: Point, p2: Point, p3: Point, p4: Point): PerspectiveTransform {
+function quadrilateralToSquare(
+  p1: Point,
+  p2: Point,
+  p3: Point,
+  p4: Point,
+): PerspectiveTransform {
   // Here, the adjoint serves as the inverse:
   const sToQ = squareToQuadrilateral(p1, p2, p3, p4);
   return {
@@ -66,7 +77,10 @@ function quadrilateralToSquare(p1: Point, p2: Point, p3: Point, p4: Point): Pers
   };
 }
 
-function times(a: PerspectiveTransform, b: PerspectiveTransform): PerspectiveTransform {
+function times(
+  a: PerspectiveTransform,
+  b: PerspectiveTransform,
+): PerspectiveTransform {
   return {
     a11: a.a11 * b.a11 + a.a21 * b.a12 + a.a31 * b.a13,
     a12: a.a12 * b.a11 + a.a22 * b.a12 + a.a32 * b.a13,
@@ -82,12 +96,17 @@ function times(a: PerspectiveTransform, b: PerspectiveTransform): PerspectiveTra
 
 export function extract(image: BitMatrix, location: QRLocation) {
   const qToS = quadrilateralToSquare(
-    {x: 3.5, y: 3.5},
-    {x: location.dimension - 3.5, y: 3.5},
-    {x: location.dimension - 6.5, y: location.dimension - 6.5},
-    {x: 3.5, y: location.dimension - 3.5},
+    { x: 3.5, y: 3.5 },
+    { x: location.dimension - 3.5, y: 3.5 },
+    { x: location.dimension - 6.5, y: location.dimension - 6.5 },
+    { x: 3.5, y: location.dimension - 3.5 },
   );
-  const sToQ = squareToQuadrilateral(location.topLeft, location.topRight, location.alignmentPattern, location.bottomLeft);
+  const sToQ = squareToQuadrilateral(
+    location.topLeft,
+    location.topRight,
+    location.alignmentPattern,
+    location.bottomLeft,
+  );
   const transform = times(sToQ, qToS);
 
   const matrix = BitMatrix.createEmpty(location.dimension, location.dimension);
@@ -104,7 +123,11 @@ export function extract(image: BitMatrix, location: QRLocation) {
       const xValue = x + 0.5;
       const yValue = y + 0.5;
       const sourcePixel = mappingFunction(xValue, yValue);
-      matrix.set(x, y, image.get(Math.floor(sourcePixel.x), Math.floor(sourcePixel.y)));
+      matrix.set(
+        x,
+        y,
+        image.get(Math.floor(sourcePixel.x), Math.floor(sourcePixel.y)),
+      );
     }
   }
 

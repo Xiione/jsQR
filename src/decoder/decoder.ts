@@ -1,7 +1,10 @@
 import { BitMatrix } from "../BitMatrix";
 import { Point } from "../Point";
 import { decode as decodeData, DecodedQR } from "./decodeData";
-import { decodeWASM as rsDecode, decodeJS as rsDecodeExpected } from "./reedsolomon";
+import {
+  decodeWASM as rsDecode,
+  decodeJS as rsDecodeExpected,
+} from "./reedsolomon";
 import { Version, VERSIONS } from "./version";
 
 // tslint:disable:no-bitwise
@@ -23,47 +26,47 @@ function pushBit(bit: any, byte: number) {
 const FORMAT_INFO_TABLE = [
   { bits: 0x5412, formatInfo: { errorCorrectionLevel: 1, dataMask: 0 } },
   { bits: 0x5125, formatInfo: { errorCorrectionLevel: 1, dataMask: 1 } },
-  { bits: 0x5E7C, formatInfo: { errorCorrectionLevel: 1, dataMask: 2 } },
-  { bits: 0x5B4B, formatInfo: { errorCorrectionLevel: 1, dataMask: 3 } },
-  { bits: 0x45F9, formatInfo: { errorCorrectionLevel: 1, dataMask: 4 } },
-  { bits: 0x40CE, formatInfo: { errorCorrectionLevel: 1, dataMask: 5 } },
-  { bits: 0x4F97, formatInfo: { errorCorrectionLevel: 1, dataMask: 6 } },
-  { bits: 0x4AA0, formatInfo: { errorCorrectionLevel: 1, dataMask: 7 } },
-  { bits: 0x77C4, formatInfo: { errorCorrectionLevel: 0, dataMask: 0 } },
-  { bits: 0x72F3, formatInfo: { errorCorrectionLevel: 0, dataMask: 1 } },
-  { bits: 0x7DAA, formatInfo: { errorCorrectionLevel: 0, dataMask: 2 } },
-  { bits: 0x789D, formatInfo: { errorCorrectionLevel: 0, dataMask: 3 } },
-  { bits: 0x662F, formatInfo: { errorCorrectionLevel: 0, dataMask: 4 } },
+  { bits: 0x5e7c, formatInfo: { errorCorrectionLevel: 1, dataMask: 2 } },
+  { bits: 0x5b4b, formatInfo: { errorCorrectionLevel: 1, dataMask: 3 } },
+  { bits: 0x45f9, formatInfo: { errorCorrectionLevel: 1, dataMask: 4 } },
+  { bits: 0x40ce, formatInfo: { errorCorrectionLevel: 1, dataMask: 5 } },
+  { bits: 0x4f97, formatInfo: { errorCorrectionLevel: 1, dataMask: 6 } },
+  { bits: 0x4aa0, formatInfo: { errorCorrectionLevel: 1, dataMask: 7 } },
+  { bits: 0x77c4, formatInfo: { errorCorrectionLevel: 0, dataMask: 0 } },
+  { bits: 0x72f3, formatInfo: { errorCorrectionLevel: 0, dataMask: 1 } },
+  { bits: 0x7daa, formatInfo: { errorCorrectionLevel: 0, dataMask: 2 } },
+  { bits: 0x789d, formatInfo: { errorCorrectionLevel: 0, dataMask: 3 } },
+  { bits: 0x662f, formatInfo: { errorCorrectionLevel: 0, dataMask: 4 } },
   { bits: 0x6318, formatInfo: { errorCorrectionLevel: 0, dataMask: 5 } },
-  { bits: 0x6C41, formatInfo: { errorCorrectionLevel: 0, dataMask: 6 } },
+  { bits: 0x6c41, formatInfo: { errorCorrectionLevel: 0, dataMask: 6 } },
   { bits: 0x6976, formatInfo: { errorCorrectionLevel: 0, dataMask: 7 } },
   { bits: 0x1689, formatInfo: { errorCorrectionLevel: 3, dataMask: 0 } },
-  { bits: 0x13BE, formatInfo: { errorCorrectionLevel: 3, dataMask: 1 } },
-  { bits: 0x1CE7, formatInfo: { errorCorrectionLevel: 3, dataMask: 2 } },
-  { bits: 0x19D0, formatInfo: { errorCorrectionLevel: 3, dataMask: 3 } },
+  { bits: 0x13be, formatInfo: { errorCorrectionLevel: 3, dataMask: 1 } },
+  { bits: 0x1ce7, formatInfo: { errorCorrectionLevel: 3, dataMask: 2 } },
+  { bits: 0x19d0, formatInfo: { errorCorrectionLevel: 3, dataMask: 3 } },
   { bits: 0x0762, formatInfo: { errorCorrectionLevel: 3, dataMask: 4 } },
   { bits: 0x0255, formatInfo: { errorCorrectionLevel: 3, dataMask: 5 } },
-  { bits: 0x0D0C, formatInfo: { errorCorrectionLevel: 3, dataMask: 6 } },
-  { bits: 0x083B, formatInfo: { errorCorrectionLevel: 3, dataMask: 7 } },
-  { bits: 0x355F, formatInfo: { errorCorrectionLevel: 2, dataMask: 0 } },
+  { bits: 0x0d0c, formatInfo: { errorCorrectionLevel: 3, dataMask: 6 } },
+  { bits: 0x083b, formatInfo: { errorCorrectionLevel: 3, dataMask: 7 } },
+  { bits: 0x355f, formatInfo: { errorCorrectionLevel: 2, dataMask: 0 } },
   { bits: 0x3068, formatInfo: { errorCorrectionLevel: 2, dataMask: 1 } },
-  { bits: 0x3F31, formatInfo: { errorCorrectionLevel: 2, dataMask: 2 } },
-  { bits: 0x3A06, formatInfo: { errorCorrectionLevel: 2, dataMask: 3 } },
-  { bits: 0x24B4, formatInfo: { errorCorrectionLevel: 2, dataMask: 4 } },
+  { bits: 0x3f31, formatInfo: { errorCorrectionLevel: 2, dataMask: 2 } },
+  { bits: 0x3a06, formatInfo: { errorCorrectionLevel: 2, dataMask: 3 } },
+  { bits: 0x24b4, formatInfo: { errorCorrectionLevel: 2, dataMask: 4 } },
   { bits: 0x2183, formatInfo: { errorCorrectionLevel: 2, dataMask: 5 } },
-  { bits: 0x2EDA, formatInfo: { errorCorrectionLevel: 2, dataMask: 6 } },
-  { bits: 0x2BED, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
+  { bits: 0x2eda, formatInfo: { errorCorrectionLevel: 2, dataMask: 6 } },
+  { bits: 0x2bed, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
 ];
 
 const DATA_MASKS = [
-  (p: Point) => ((p.y + p.x) % 2) === 0,
-  (p: Point) => (p.y % 2) === 0,
+  (p: Point) => (p.y + p.x) % 2 === 0,
+  (p: Point) => p.y % 2 === 0,
   (p: Point) => p.x % 3 === 0,
   (p: Point) => (p.y + p.x) % 3 === 0,
   (p: Point) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
   (p: Point) => ((p.x * p.y) % 2) + ((p.x * p.y) % 3) === 0,
-  (p: Point) => ((((p.y * p.x) % 2) + (p.y * p.x) % 3) % 2) === 0,
-  (p: Point) => ((((p.y + p.x) % 2) + (p.y * p.x) % 3) % 2) === 0,
+  (p: Point) => (((p.y * p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+  (p: Point) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
 ];
 
 interface FormatInformation {
@@ -82,7 +85,13 @@ export function buildFunctionPatternMask(version: Version): BitMatrix {
   // Alignment patterns
   for (const x of version.alignmentPatternCenters) {
     for (const y of version.alignmentPatternCenters) {
-      if (!(x === 6 && y === 6 || x === 6 && y === dimension - 7 || x === dimension - 7 && y === 6)) {
+      if (
+        !(
+          (x === 6 && y === 6) ||
+          (x === 6 && y === dimension - 7) ||
+          (x === dimension - 7 && y === 6)
+        )
+      ) {
         matrix.setRegion(x - 2, y - 2, 5, 5, true);
       }
     }
@@ -99,7 +108,11 @@ export function buildFunctionPatternMask(version: Version): BitMatrix {
   return matrix;
 }
 
-function readCodewords(matrix: BitMatrix, version: Version, formatInfo: FormatInformation) {
+function readCodewords(
+  matrix: BitMatrix,
+  version: Version,
+  formatInfo: FormatInformation,
+) {
   const dataMask = DATA_MASKS[formatInfo.dataMask];
   const dimension = matrix.height;
 
@@ -112,7 +125,8 @@ function readCodewords(matrix: BitMatrix, version: Version, formatInfo: FormatIn
   // Read columns in pairs, from right to left
   let readingUp = true;
   for (let columnIndex = dimension - 1; columnIndex > 0; columnIndex -= 2) {
-    if (columnIndex === 6) { // Skip whole column with vertical alignment pattern;
+    if (columnIndex === 6) {
+      // Skip whole column with vertical alignment pattern;
       columnIndex--;
     }
     for (let i = 0; i < dimension; i++) {
@@ -122,11 +136,12 @@ function readCodewords(matrix: BitMatrix, version: Version, formatInfo: FormatIn
         if (!functionPatternMask.get(x, y)) {
           bitsRead++;
           let bit = matrix.get(x, y);
-          if (dataMask({y, x})) {
+          if (dataMask({ y, x })) {
             bit = !bit;
           }
           currentByte = pushBit(bit, currentByte);
-          if (bitsRead === 8) { // Whole bytes
+          if (bitsRead === 8) {
+            // Whole bytes
             codewords.push(currentByte);
             bitsRead = 0;
             currentByte = 0;
@@ -143,7 +158,8 @@ function readVersion(matrix: BitMatrix): Version {
   const dimension = matrix.height;
 
   const provisionalVersion = Math.floor((dimension - 17) / 4);
-  if (provisionalVersion <= 6) { // 6 and under dont have version info in the QR code
+  if (provisionalVersion <= 6) {
+    // 6 and under dont have version info in the QR code
     return VERSIONS[provisionalVersion - 1];
   }
 
@@ -164,7 +180,10 @@ function readVersion(matrix: BitMatrix): Version {
   let bestDifference = Infinity;
   let bestVersion: Version;
   for (const version of VERSIONS) {
-    if (version.infoBits === topRightVersionBits || version.infoBits === bottomLeftVersionBits) {
+    if (
+      version.infoBits === topRightVersionBits ||
+      version.infoBits === bottomLeftVersionBits
+    ) {
       return version;
     }
 
@@ -190,29 +209,42 @@ function readVersion(matrix: BitMatrix): Version {
 function readFormatInformation(matrix: BitMatrix) {
   let topLeftFormatInfoBits = 0;
   for (let x = 0; x <= 8; x++) {
-    if (x !== 6) { // Skip timing pattern bit
+    if (x !== 6) {
+      // Skip timing pattern bit
       topLeftFormatInfoBits = pushBit(matrix.get(x, 8), topLeftFormatInfoBits);
     }
   }
   for (let y = 7; y >= 0; y--) {
-    if (y !== 6) { // Skip timing pattern bit
+    if (y !== 6) {
+      // Skip timing pattern bit
       topLeftFormatInfoBits = pushBit(matrix.get(8, y), topLeftFormatInfoBits);
     }
   }
 
   const dimension = matrix.height;
   let topRightBottomRightFormatInfoBits = 0;
-  for (let y = dimension - 1; y >= dimension - 7; y--) { // bottom left
-    topRightBottomRightFormatInfoBits = pushBit(matrix.get(8, y), topRightBottomRightFormatInfoBits);
+  for (let y = dimension - 1; y >= dimension - 7; y--) {
+    // bottom left
+    topRightBottomRightFormatInfoBits = pushBit(
+      matrix.get(8, y),
+      topRightBottomRightFormatInfoBits,
+    );
   }
-  for (let x = dimension - 8; x < dimension; x++) { // top right
-    topRightBottomRightFormatInfoBits = pushBit(matrix.get(x, 8), topRightBottomRightFormatInfoBits);
+  for (let x = dimension - 8; x < dimension; x++) {
+    // top right
+    topRightBottomRightFormatInfoBits = pushBit(
+      matrix.get(x, 8),
+      topRightBottomRightFormatInfoBits,
+    );
   }
 
   let bestDifference = Infinity;
   let bestFormatInfo = null;
-  for (const {bits, formatInfo} of FORMAT_INFO_TABLE) {
-    if (bits === topLeftFormatInfoBits || bits === topRightBottomRightFormatInfoBits) {
+  for (const { bits, formatInfo } of FORMAT_INFO_TABLE) {
+    if (
+      bits === topLeftFormatInfoBits ||
+      bits === topRightBottomRightFormatInfoBits
+    ) {
       return formatInfo;
     }
     let difference = numBitsDiffering(topLeftFormatInfoBits, bits);
@@ -220,7 +252,8 @@ function readFormatInformation(matrix: BitMatrix) {
       bestFormatInfo = formatInfo;
       bestDifference = difference;
     }
-    if (topLeftFormatInfoBits !== topRightBottomRightFormatInfoBits) { // also try the other option
+    if (topLeftFormatInfoBits !== topRightBottomRightFormatInfoBits) {
+      // also try the other option
       difference = numBitsDiffering(topRightBottomRightFormatInfoBits, bits);
       if (difference < bestDifference) {
         bestFormatInfo = formatInfo;
@@ -243,10 +276,14 @@ function getDataBlocks(codewords: number[], version: Version, ecLevel: number) {
   }> = [];
 
   let totalCodewords = 0;
-  ecInfo.ecBlocks.forEach(block => {
+  ecInfo.ecBlocks.forEach((block) => {
     for (let i = 0; i < block.numBlocks; i++) {
-      dataBlocks.push({ numDataCodewords: block.dataCodewordsPerBlock, codewords: [] });
-      totalCodewords += block.dataCodewordsPerBlock + ecInfo.ecCodewordsPerBlock;
+      dataBlocks.push({
+        numDataCodewords: block.dataCodewordsPerBlock,
+        codewords: [],
+      });
+      totalCodewords +=
+        block.dataCodewordsPerBlock + ecInfo.ecCodewordsPerBlock;
     }
   });
 
@@ -295,7 +332,11 @@ function decodeMatrix(matrix: BitMatrix) {
     return null;
   }
   const codewords = readCodewords(matrix, version, formatInfo);
-  const dataBlocks = getDataBlocks(codewords, version, formatInfo.errorCorrectionLevel);
+  const dataBlocks = getDataBlocks(
+    codewords,
+    version,
+    formatInfo.errorCorrectionLevel,
+  );
   if (!dataBlocks) {
     return null;
   }
@@ -306,11 +347,13 @@ function decodeMatrix(matrix: BitMatrix) {
 
   let resultIndex = 0;
   for (const dataBlock of dataBlocks) {
-    const decodeRes = rsDecode(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
+    const decodeRes = rsDecode(
+      dataBlock.codewords,
+      dataBlock.codewords.length - dataBlock.numDataCodewords,
+    );
     const errors = decodeRes["errors"];
 
-    if (errors >= 0)
-      console.log(errors)
+    if (errors >= 0) console.log(errors);
     // const bytesCorrected = rsDecodeExpected(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
     const bytesCorrected = decodeRes["bytesCorrected"];
     if (!bytesCorrected) {
@@ -350,5 +393,5 @@ export function decode(matrix: BitMatrix): DecodedQR {
     }
   }
   const res = decodeMatrix(matrix);
-  return res ? {...res, mirrored: true} : null;
+  return res ? { ...res, mirrored: true } : null;
 }

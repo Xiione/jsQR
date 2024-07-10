@@ -20,7 +20,7 @@ export class BitStream {
       const bitsLeft = 8 - this.bitOffset;
       const toRead = numBits < bitsLeft ? numBits : bitsLeft;
       const bitsToNotRead = bitsLeft - toRead;
-      const mask = (0xFF >> (8 - toRead)) << bitsToNotRead;
+      const mask = (0xff >> (8 - toRead)) << bitsToNotRead;
       result = (this.bytes[this.byteOffset] & mask) >> bitsToNotRead;
       numBits -= toRead;
       this.bitOffset += toRead;
@@ -33,7 +33,7 @@ export class BitStream {
     // Next read whole bytes
     if (numBits > 0) {
       while (numBits >= 8) {
-        result = (result << 8) | (this.bytes[this.byteOffset] & 0xFF);
+        result = (result << 8) | (this.bytes[this.byteOffset] & 0xff);
         this.byteOffset++;
         numBits -= 8;
       }
@@ -41,8 +41,10 @@ export class BitStream {
       // Finally read a partial byte
       if (numBits > 0) {
         const bitsToNotRead = 8 - numBits;
-        const mask = (0xFF >> bitsToNotRead) << bitsToNotRead;
-        result = (result << numBits) | ((this.bytes[this.byteOffset] & mask) >> bitsToNotRead);
+        const mask = (0xff >> bitsToNotRead) << bitsToNotRead;
+        result =
+          (result << numBits) |
+          ((this.bytes[this.byteOffset] & mask) >> bitsToNotRead);
         this.bitOffset += numBits;
       }
     }

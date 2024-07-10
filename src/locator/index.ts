@@ -17,14 +17,19 @@ export interface QRLocation {
   dimension: number;
 }
 
-const distance = (a: Point, b: Point) => Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+const distance = (a: Point, b: Point) =>
+  Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
 
 function sum(values: number[]) {
   return values.reduce((a, b) => a + b);
 }
 
 // Takes three finder patterns and organizes them into topLeft, topRight, etc
-function reorderFinderPatterns(pattern1: Point, pattern2: Point, pattern3: Point) {
+function reorderFinderPatterns(
+  pattern1: Point,
+  pattern2: Point,
+  pattern3: Point,
+) {
   // Find distances between pattern centers
   const oneTwoDistance = distance(pattern1, pattern2);
   const twoThreeDistance = distance(pattern2, pattern3);
@@ -35,9 +40,15 @@ function reorderFinderPatterns(pattern1: Point, pattern2: Point, pattern3: Point
   let topRight: Point;
 
   // Assume one closest to other two is B; A and C will just be guesses at first
-  if (twoThreeDistance >= oneTwoDistance && twoThreeDistance >= oneThreeDistance) {
+  if (
+    twoThreeDistance >= oneTwoDistance &&
+    twoThreeDistance >= oneThreeDistance
+  ) {
     [bottomLeft, topLeft, topRight] = [pattern2, pattern1, pattern3];
-  } else if (oneThreeDistance >= twoThreeDistance && oneThreeDistance >= oneTwoDistance) {
+  } else if (
+    oneThreeDistance >= twoThreeDistance &&
+    oneThreeDistance >= oneTwoDistance
+  ) {
     [bottomLeft, topLeft, topRight] = [pattern1, pattern2, pattern3];
   } else {
     [bottomLeft, topLeft, topRight] = [pattern1, pattern3, pattern2];
@@ -46,7 +57,11 @@ function reorderFinderPatterns(pattern1: Point, pattern2: Point, pattern3: Point
   // Use cross product to figure out whether bottomLeft (A) and topRight (C) are correct or flipped in relation to topLeft (B)
   // This asks whether BC x BA has a positive z component, which is the arrangement we want. If it's negative, then
   // we've got it flipped around and should swap topRight and bottomLeft.
-  if (((topRight.x - topLeft.x) * (bottomLeft.y - topLeft.y)) - ((topRight.y - topLeft.y) * (bottomLeft.x - topLeft.x)) < 0) {
+  if (
+    (topRight.x - topLeft.x) * (bottomLeft.y - topLeft.y) -
+      (topRight.y - topLeft.y) * (bottomLeft.x - topLeft.x) <
+    0
+  ) {
     [bottomLeft, topRight] = [topRight, bottomLeft];
   }
 
@@ -54,13 +69,18 @@ function reorderFinderPatterns(pattern1: Point, pattern2: Point, pattern3: Point
 }
 
 // Computes the dimension (number of modules on a side) of the QR Code based on the position of the finder patterns
-function computeDimension(topLeft: Point, topRight: Point, bottomLeft: Point, matrix: BitMatrix) {
-  const moduleSize = (
-    sum(countBlackWhiteRun(topLeft, bottomLeft, matrix, 5)) / 7 + // Divide by 7 since the ratio is 1:1:3:1:1
-    sum(countBlackWhiteRun(topLeft, topRight, matrix, 5)) / 7 +
-    sum(countBlackWhiteRun(bottomLeft, topLeft, matrix, 5)) / 7 +
-    sum(countBlackWhiteRun(topRight, topLeft, matrix, 5)) / 7
-  ) / 4;
+function computeDimension(
+  topLeft: Point,
+  topRight: Point,
+  bottomLeft: Point,
+  matrix: BitMatrix,
+) {
+  const moduleSize =
+    (sum(countBlackWhiteRun(topLeft, bottomLeft, matrix, 5)) / 7 + // Divide by 7 since the ratio is 1:1:3:1:1
+      sum(countBlackWhiteRun(topLeft, topRight, matrix, 5)) / 7 +
+      sum(countBlackWhiteRun(bottomLeft, topLeft, matrix, 5)) / 7 +
+      sum(countBlackWhiteRun(topRight, topLeft, matrix, 5)) / 7) /
+    4;
 
   if (moduleSize < 1) {
     throw new Error("Invalid module size");
@@ -83,8 +103,15 @@ function computeDimension(topLeft: Point, topRight: Point, bottomLeft: Point, ma
 // Takes an origin point and an end point and counts the sizes of the black white run from the origin towards the end point.
 // Returns an array of elements, representing the pixel size of the black white run.
 // Uses a variant of http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
-function countBlackWhiteRunTowardsPoint(origin: Point, end: Point, matrix: BitMatrix, length: number) {
-  const switchPoints: Point[] = [{x: Math.floor(origin.x), y: Math.floor(origin.y)}];
+function countBlackWhiteRunTowardsPoint(
+  origin: Point,
+  end: Point,
+  matrix: BitMatrix,
+  length: number,
+) {
+  const switchPoints: Point[] = [
+    { x: Math.floor(origin.x), y: Math.floor(origin.y) },
+  ];
   const steep = Math.abs(end.y - origin.y) > Math.abs(end.x - origin.x);
 
   let fromX: number;
@@ -119,7 +146,7 @@ function countBlackWhiteRunTowardsPoint(origin: Point, end: Point, matrix: BitMa
     const realY = steep ? x : y;
     if (matrix.get(realX, realY) !== currentPixel) {
       currentPixel = !currentPixel;
-      switchPoints.push({x: realX, y: realY});
+      switchPoints.push({ x: realX, y: realY });
       if (switchPoints.length === length + 1) {
         break;
       }
@@ -147,12 +174,27 @@ function countBlackWhiteRunTowardsPoint(origin: Point, end: Point, matrix: BitMa
 // Takes an origin point and an end point and counts the sizes of the black white run in the origin point
 // along the line that intersects with the end point. Returns an array of elements, representing the pixel sizes
 // of the black white run. Takes a length which represents the number of switches from black to white to look for.
-function countBlackWhiteRun(origin: Point, end: Point, matrix: BitMatrix, length: number) {
+function countBlackWhiteRun(
+  origin: Point,
+  end: Point,
+  matrix: BitMatrix,
+  length: number,
+) {
   const rise = end.y - origin.y;
   const run = end.x - origin.x;
 
-  const towardsEnd = countBlackWhiteRunTowardsPoint(origin, end, matrix, Math.ceil(length / 2));
-  const awayFromEnd = countBlackWhiteRunTowardsPoint(origin, {x: origin.x - run, y: origin.y - rise}, matrix, Math.ceil(length / 2));
+  const towardsEnd = countBlackWhiteRunTowardsPoint(
+    origin,
+    end,
+    matrix,
+    Math.ceil(length / 2),
+  );
+  const awayFromEnd = countBlackWhiteRunTowardsPoint(
+    origin,
+    { x: origin.x - run, y: origin.y - rise },
+    matrix,
+    Math.ceil(length / 2),
+  );
 
   const middleValue = towardsEnd.shift() + awayFromEnd.shift() - 1; // Substract one so we don't double count a pixel
   return awayFromEnd.concat(middleValue).concat(...towardsEnd);
@@ -175,37 +217,66 @@ function scoreBlackWhiteRun(sequence: number[], ratios: number[]) {
 // against that.
 function scorePattern(point: Point, ratios: number[], matrix: BitMatrix) {
   try {
-    const horizontalRun = countBlackWhiteRun(point, {x: -1, y: point.y}, matrix, ratios.length);
-    const verticalRun = countBlackWhiteRun(point, {x: point.x, y: -1}, matrix, ratios.length);
+    const horizontalRun = countBlackWhiteRun(
+      point,
+      { x: -1, y: point.y },
+      matrix,
+      ratios.length,
+    );
+    const verticalRun = countBlackWhiteRun(
+      point,
+      { x: point.x, y: -1 },
+      matrix,
+      ratios.length,
+    );
 
     const topLeftPoint = {
       x: Math.max(0, point.x - point.y) - 1,
       y: Math.max(0, point.y - point.x) - 1,
     };
-    const topLeftBottomRightRun = countBlackWhiteRun(point, topLeftPoint, matrix, ratios.length);
+    const topLeftBottomRightRun = countBlackWhiteRun(
+      point,
+      topLeftPoint,
+      matrix,
+      ratios.length,
+    );
 
     const bottomLeftPoint = {
       x: Math.min(matrix.width, point.x + point.y) + 1,
       y: Math.min(matrix.height, point.y + point.x) + 1,
     };
-    const bottomLeftTopRightRun = countBlackWhiteRun(point, bottomLeftPoint, matrix, ratios.length);
+    const bottomLeftTopRightRun = countBlackWhiteRun(
+      point,
+      bottomLeftPoint,
+      matrix,
+      ratios.length,
+    );
 
     const horzError = scoreBlackWhiteRun(horizontalRun, ratios);
     const vertError = scoreBlackWhiteRun(verticalRun, ratios);
     const diagDownError = scoreBlackWhiteRun(topLeftBottomRightRun, ratios);
     const diagUpError = scoreBlackWhiteRun(bottomLeftTopRightRun, ratios);
 
-    const ratioError = Math.sqrt(horzError.error * horzError.error +
-      vertError.error * vertError.error +
-      diagDownError.error * diagDownError.error +
-      diagUpError.error * diagUpError.error);
+    const ratioError = Math.sqrt(
+      horzError.error * horzError.error +
+        vertError.error * vertError.error +
+        diagDownError.error * diagDownError.error +
+        diagUpError.error * diagUpError.error,
+    );
 
-    const avgSize = (horzError.averageSize + vertError.averageSize + diagDownError.averageSize + diagUpError.averageSize) / 4;
+    const avgSize =
+      (horzError.averageSize +
+        vertError.averageSize +
+        diagDownError.averageSize +
+        diagUpError.averageSize) /
+      4;
 
-    const sizeError = ((horzError.averageSize - avgSize) ** 2 +
-      (vertError.averageSize - avgSize) ** 2 +
-      (diagDownError.averageSize - avgSize) ** 2 +
-      (diagUpError.averageSize - avgSize) ** 2) / avgSize;
+    const sizeError =
+      ((horzError.averageSize - avgSize) ** 2 +
+        (vertError.averageSize - avgSize) ** 2 +
+        (diagDownError.averageSize - avgSize) ** 2 +
+        (diagUpError.averageSize - avgSize) ** 2) /
+      avgSize;
     return ratioError + sizeError;
   } catch {
     return Infinity;
@@ -272,19 +343,27 @@ export function locate(matrix: BitMatrix): QRLocation[] {
         // Do the last 5 color changes ~ match the expected ratio for a finder pattern? 1:1:3:1:1 of b:w:b:w:b
         const averageFinderPatternBlocksize = sum(scans) / 7;
         const validFinderPattern =
-          Math.abs(scans[0] - averageFinderPatternBlocksize) < averageFinderPatternBlocksize &&
-          Math.abs(scans[1] - averageFinderPatternBlocksize) < averageFinderPatternBlocksize &&
-          Math.abs(scans[2] - 3 * averageFinderPatternBlocksize) < 3 * averageFinderPatternBlocksize &&
-          Math.abs(scans[3] - averageFinderPatternBlocksize) < averageFinderPatternBlocksize &&
-          Math.abs(scans[4] - averageFinderPatternBlocksize) < averageFinderPatternBlocksize &&
+          Math.abs(scans[0] - averageFinderPatternBlocksize) <
+            averageFinderPatternBlocksize &&
+          Math.abs(scans[1] - averageFinderPatternBlocksize) <
+            averageFinderPatternBlocksize &&
+          Math.abs(scans[2] - 3 * averageFinderPatternBlocksize) <
+            3 * averageFinderPatternBlocksize &&
+          Math.abs(scans[3] - averageFinderPatternBlocksize) <
+            averageFinderPatternBlocksize &&
+          Math.abs(scans[4] - averageFinderPatternBlocksize) <
+            averageFinderPatternBlocksize &&
           !v; // And make sure the current pixel is white since finder patterns are bordered in white
 
         // Do the last 3 color changes ~ match the expected ratio for an alignment pattern? 1:1:1 of w:b:w
         const averageAlignmentPatternBlocksize = sum(scans.slice(-3)) / 3;
         const validAlignmentPattern =
-          Math.abs(scans[2] - averageAlignmentPatternBlocksize) < averageAlignmentPatternBlocksize &&
-          Math.abs(scans[3] - averageAlignmentPatternBlocksize) < averageAlignmentPatternBlocksize &&
-          Math.abs(scans[4] - averageAlignmentPatternBlocksize) < averageAlignmentPatternBlocksize &&
+          Math.abs(scans[2] - averageAlignmentPatternBlocksize) <
+            averageAlignmentPatternBlocksize &&
+          Math.abs(scans[3] - averageAlignmentPatternBlocksize) <
+            averageAlignmentPatternBlocksize &&
+          Math.abs(scans[4] - averageAlignmentPatternBlocksize) <
+            averageAlignmentPatternBlocksize &&
           v; // Is the current pixel black since alignment patterns are bordered in black
 
         if (validFinderPattern) {
@@ -295,13 +374,14 @@ export function locate(matrix: BitMatrix): QRLocation[] {
           const line = { startX, endX, y };
           // Is there a quad directly above the current spot? If so, extend it with the new line. Otherwise, create a new quad with
           // that line as the starting point.
-          const matchingQuads = activeFinderPatternQuads.filter(q =>
-            (startX >= q.bottom.startX && startX <= q.bottom.endX) ||
-            (endX >= q.bottom.startX && startX <= q.bottom.endX) ||
-            (startX <= q.bottom.startX && endX >= q.bottom.endX && (
-              (scans[2] / (q.bottom.endX - q.bottom.startX)) < MAX_QUAD_RATIO &&
-              (scans[2] / (q.bottom.endX - q.bottom.startX)) > MIN_QUAD_RATIO
-            )),
+          const matchingQuads = activeFinderPatternQuads.filter(
+            (q) =>
+              (startX >= q.bottom.startX && startX <= q.bottom.endX) ||
+              (endX >= q.bottom.startX && startX <= q.bottom.endX) ||
+              (startX <= q.bottom.startX &&
+                endX >= q.bottom.endX &&
+                scans[2] / (q.bottom.endX - q.bottom.startX) < MAX_QUAD_RATIO &&
+                scans[2] / (q.bottom.endX - q.bottom.startX) > MIN_QUAD_RATIO),
           );
           if (matchingQuads.length > 0) {
             matchingQuads[0].bottom = line;
@@ -317,13 +397,14 @@ export function locate(matrix: BitMatrix): QRLocation[] {
           const line = { startX, y, endX };
           // Is there a quad directly above the current spot? If so, extend it with the new line. Otherwise, create a new quad with
           // that line as the starting point.
-          const matchingQuads = activeAlignmentPatternQuads.filter(q =>
-            (startX >= q.bottom.startX && startX <= q.bottom.endX) ||
-            (endX >= q.bottom.startX && startX <= q.bottom.endX) ||
-            (startX <= q.bottom.startX && endX >= q.bottom.endX && (
-              (scans[2] / (q.bottom.endX - q.bottom.startX)) < MAX_QUAD_RATIO &&
-              (scans[2] / (q.bottom.endX - q.bottom.startX)) > MIN_QUAD_RATIO
-            )),
+          const matchingQuads = activeAlignmentPatternQuads.filter(
+            (q) =>
+              (startX >= q.bottom.startX && startX <= q.bottom.endX) ||
+              (endX >= q.bottom.startX && startX <= q.bottom.endX) ||
+              (startX <= q.bottom.startX &&
+                endX >= q.bottom.endX &&
+                scans[2] / (q.bottom.endX - q.bottom.startX) < MAX_QUAD_RATIO &&
+                scans[2] / (q.bottom.endX - q.bottom.startX) > MIN_QUAD_RATIO),
           );
           if (matchingQuads.length > 0) {
             matchingQuads[0].bottom = line;
@@ -333,15 +414,26 @@ export function locate(matrix: BitMatrix): QRLocation[] {
         }
       }
     }
-    finderPatternQuads.push(...activeFinderPatternQuads.filter(q => q.bottom.y !== y && q.bottom.y - q.top.y >= 2));
-    activeFinderPatternQuads = activeFinderPatternQuads.filter(q => q.bottom.y === y);
+    finderPatternQuads.push(
+      ...activeFinderPatternQuads.filter(
+        (q) => q.bottom.y !== y && q.bottom.y - q.top.y >= 2,
+      ),
+    );
+    activeFinderPatternQuads = activeFinderPatternQuads.filter(
+      (q) => q.bottom.y === y,
+    );
 
-    alignmentPatternQuads.push(...activeAlignmentPatternQuads.filter(q => q.bottom.y !== y));
-    activeAlignmentPatternQuads = activeAlignmentPatternQuads.filter(q => q.bottom.y === y);
-
+    alignmentPatternQuads.push(
+      ...activeAlignmentPatternQuads.filter((q) => q.bottom.y !== y),
+    );
+    activeAlignmentPatternQuads = activeAlignmentPatternQuads.filter(
+      (q) => q.bottom.y === y,
+    );
   }
 
-  finderPatternQuads.push(...activeFinderPatternQuads.filter(q => q.bottom.y - q.top.y >= 2));
+  finderPatternQuads.push(
+    ...activeFinderPatternQuads.filter((q) => q.bottom.y - q.top.y >= 2),
+  );
   alignmentPatternQuads.push(...activeAlignmentPatternQuads);
 
   // Refactored from cozmo/jsQR to (hopefully) circumvent an issue in Safari 13+ on both Mac and iOS (also including
@@ -351,7 +443,9 @@ export function locate(matrix: BitMatrix): QRLocation[] {
   // array instance which was the chained result from previous calls to .map, .filter and .sort which potentially caused
   // this bug in Safari?
   // Also see https://github.com/cozmo/jsQR/issues/157 and https://bugs.webkit.org/show_bug.cgi?id=211619#c3
-  const scoredFinderPatternPositions: Array<Point & { size: number, score: number }> = [];
+  const scoredFinderPatternPositions: Array<
+    Point & { size: number; score: number }
+  > = [];
   for (const quad of finderPatternQuads) {
     if (quad.bottom.y - quad.top.y < 2) {
       // All quads must be at least 2px tall since the center square is larger than a block
@@ -359,16 +453,29 @@ export function locate(matrix: BitMatrix): QRLocation[] {
     }
 
     // calculate quad center
-    const x = (quad.top.startX + quad.top.endX + quad.bottom.startX + quad.bottom.endX) / 4;
+    const x =
+      (quad.top.startX +
+        quad.top.endX +
+        quad.bottom.startX +
+        quad.bottom.endX) /
+      4;
     const y = (quad.top.y + quad.bottom.y + 1) / 2;
     if (!matrix.get(Math.round(x), Math.round(y))) {
       continue;
     }
 
-    const lengths = [quad.top.endX - quad.top.startX, quad.bottom.endX - quad.bottom.startX, quad.bottom.y - quad.top.y + 1];
+    const lengths = [
+      quad.top.endX - quad.top.startX,
+      quad.bottom.endX - quad.bottom.startX,
+      quad.bottom.y - quad.top.y + 1,
+    ];
     const size = sum(lengths) / lengths.length;
     // Initial scoring of finder pattern quads by looking at their ratios, not taking into account position
-    const score = scorePattern({x: Math.round(x), y: Math.round(y)}, [1, 1, 3, 1, 1], matrix);
+    const score = scorePattern(
+      { x: Math.round(x), y: Math.round(y) },
+      [1, 1, 3, 1, 1],
+      matrix,
+    );
     scoredFinderPatternPositions.push({ score, x, y, size });
   }
   if (scoredFinderPatternPositions.length < 3) {
@@ -378,8 +485,16 @@ export function locate(matrix: BitMatrix): QRLocation[] {
   scoredFinderPatternPositions.sort((a, b) => a.score - b.score);
 
   // Now take the top finder pattern options and try to find 2 other options with a similar size.
-  const finderPatternGroups: Array<{ points: [Point, Point, Point], score: number }> = [];
-  for (let i = 0; i < Math.min(scoredFinderPatternPositions.length, MAX_FINDERPATTERNS_TO_SEARCH); ++i) {
+  const finderPatternGroups: Array<{
+    points: [Point, Point, Point];
+    score: number;
+  }> = [];
+  for (
+    let i = 0;
+    i <
+    Math.min(scoredFinderPatternPositions.length, MAX_FINDERPATTERNS_TO_SEARCH);
+    ++i
+  ) {
     const point = scoredFinderPatternPositions[i];
     const otherPoints: typeof scoredFinderPatternPositions = [];
 
@@ -389,7 +504,8 @@ export function locate(matrix: BitMatrix): QRLocation[] {
       }
       otherPoints.push({
         ...otherPoint,
-        score: otherPoint.score + ((otherPoint.size - point.size) ** 2) / point.size, // score similarity of sizes
+        score:
+          otherPoint.score + (otherPoint.size - point.size) ** 2 / point.size, // score similarity of sizes
       });
     }
     otherPoints.sort((a, b) => a.score - b.score);
@@ -402,16 +518,27 @@ export function locate(matrix: BitMatrix): QRLocation[] {
   finderPatternGroups.sort((a, b) => a.score - b.score);
   const bestFinderPatternGroup = finderPatternGroups[0];
 
-  const { topRight, topLeft, bottomLeft } = reorderFinderPatterns(...bestFinderPatternGroup.points);
-  const alignment = findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, bottomLeft);
+  const { topRight, topLeft, bottomLeft } = reorderFinderPatterns(
+    ...bestFinderPatternGroup.points,
+  );
+  const alignment = findAlignmentPattern(
+    matrix,
+    alignmentPatternQuads,
+    topRight,
+    topLeft,
+    bottomLeft,
+  );
   const result: QRLocation[] = [];
   if (alignment) {
     result.push({
-      alignmentPattern: { x: alignment.alignmentPattern.x, y: alignment.alignmentPattern.y },
-      bottomLeft: {x: bottomLeft.x, y: bottomLeft.y },
+      alignmentPattern: {
+        x: alignment.alignmentPattern.x,
+        y: alignment.alignmentPattern.y,
+      },
+      bottomLeft: { x: bottomLeft.x, y: bottomLeft.y },
       dimension: alignment.dimension,
-      topLeft: {x: topLeft.x, y: topLeft.y },
-      topRight: {x: topRight.x, y: topRight.y },
+      topLeft: { x: topLeft.x, y: topLeft.y },
+      topRight: { x: topRight.x, y: topRight.y },
     });
   }
 
@@ -423,13 +550,22 @@ export function locate(matrix: BitMatrix): QRLocation[] {
   const midTopRight = recenterLocation(matrix, topRight);
   const midTopLeft = recenterLocation(matrix, topLeft);
   const midBottomLeft = recenterLocation(matrix, bottomLeft);
-  const centeredAlignment = findAlignmentPattern(matrix, alignmentPatternQuads, midTopRight, midTopLeft, midBottomLeft);
+  const centeredAlignment = findAlignmentPattern(
+    matrix,
+    alignmentPatternQuads,
+    midTopRight,
+    midTopLeft,
+    midBottomLeft,
+  );
   if (centeredAlignment) {
     result.push({
-      alignmentPattern: { x: centeredAlignment.alignmentPattern.x, y: centeredAlignment.alignmentPattern.y },
-      bottomLeft: { x: midBottomLeft.x, y: midBottomLeft. y },
-      topLeft: { x: midTopLeft.x, y: midTopLeft. y },
-      topRight: { x: midTopRight.x, y: midTopRight. y },
+      alignmentPattern: {
+        x: centeredAlignment.alignmentPattern.x,
+        y: centeredAlignment.alignmentPattern.y,
+      },
+      bottomLeft: { x: midBottomLeft.x, y: midBottomLeft.y },
+      topLeft: { x: midTopLeft.x, y: midTopLeft.y },
+      topRight: { x: midTopRight.x, y: midTopRight.y },
       dimension: centeredAlignment.dimension,
     });
   }
@@ -441,47 +577,74 @@ export function locate(matrix: BitMatrix): QRLocation[] {
   return result;
 }
 
-function findAlignmentPattern(matrix: BitMatrix, alignmentPatternQuads: Quad[], topRight: Point, topLeft: Point, bottomLeft: Point) {
+function findAlignmentPattern(
+  matrix: BitMatrix,
+  alignmentPatternQuads: Quad[],
+  topRight: Point,
+  topLeft: Point,
+  bottomLeft: Point,
+) {
   // Now that we've found the three finder patterns we can determine the blockSize and the size of the QR code.
   // We'll use these to help find the alignment pattern but also later when we do the extraction.
   let dimension: number;
   let moduleSize: number;
   try {
-    ({ dimension, moduleSize } = computeDimension(topLeft, topRight, bottomLeft, matrix));
+    ({ dimension, moduleSize } = computeDimension(
+      topLeft,
+      topRight,
+      bottomLeft,
+      matrix,
+    ));
   } catch (e) {
     return null;
   }
 
   // Now find the alignment pattern
-  const bottomRightFinderPattern = { // Best guess at where a bottomRight finder pattern would be
+  const bottomRightFinderPattern = {
+    // Best guess at where a bottomRight finder pattern would be
     x: topRight.x - topLeft.x + bottomLeft.x,
     y: topRight.y - topLeft.y + bottomLeft.y,
   };
-  const modulesBetweenFinderPatterns = ((distance(topLeft, bottomLeft) + distance(topLeft, topRight)) / 2 / moduleSize);
-  const correctionToTopLeft = 1 - (3 / modulesBetweenFinderPatterns);
+  const modulesBetweenFinderPatterns =
+    (distance(topLeft, bottomLeft) + distance(topLeft, topRight)) /
+    2 /
+    moduleSize;
+  const correctionToTopLeft = 1 - 3 / modulesBetweenFinderPatterns;
   const expectedAlignmentPattern = {
-    x: topLeft.x + correctionToTopLeft * (bottomRightFinderPattern.x - topLeft.x),
-    y: topLeft.y + correctionToTopLeft * (bottomRightFinderPattern.y - topLeft.y),
+    x:
+      topLeft.x +
+      correctionToTopLeft * (bottomRightFinderPattern.x - topLeft.x),
+    y:
+      topLeft.y +
+      correctionToTopLeft * (bottomRightFinderPattern.y - topLeft.y),
   };
 
   const alignmentPatterns = alignmentPatternQuads
-    .map(q => {
-      const x = (q.top.startX + q.top.endX + q.bottom.startX + q.bottom.endX) / 4;
+    .map((q) => {
+      const x =
+        (q.top.startX + q.top.endX + q.bottom.startX + q.bottom.endX) / 4;
       const y = (q.top.y + q.bottom.y + 1) / 2;
       if (!matrix.get(Math.floor(x), Math.floor(y))) {
         return;
       }
 
-      const sizeScore = scorePattern({x: Math.floor(x), y: Math.floor(y)}, [1, 1, 1], matrix);
-      const score = sizeScore + distance({x, y}, expectedAlignmentPattern);
+      const sizeScore = scorePattern(
+        { x: Math.floor(x), y: Math.floor(y) },
+        [1, 1, 1],
+        matrix,
+      );
+      const score = sizeScore + distance({ x, y }, expectedAlignmentPattern);
       return { x, y, score };
     })
-    .filter(v => !!v)
+    .filter((v) => !!v)
     .sort((a, b) => a.score - b.score);
 
   // If there are less than 15 modules between finder patterns it's a version 1 QR code and as such has no alignmemnt pattern
   // so we can only use our best guess.
-  const alignmentPattern = modulesBetweenFinderPatterns >= 15 && alignmentPatterns.length ? alignmentPatterns[0] : expectedAlignmentPattern;
+  const alignmentPattern =
+    modulesBetweenFinderPatterns >= 15 && alignmentPatterns.length
+      ? alignmentPatterns[0]
+      : expectedAlignmentPattern;
 
   return { alignmentPattern, dimension };
 }

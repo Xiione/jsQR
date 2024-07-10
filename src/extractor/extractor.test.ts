@@ -32,7 +32,9 @@ describe("extract", () => {
 
   it("extracts a distorted QR code", async () => {
     const input = await loadBinarized("./src/extractor/test-data/input.png");
-    const expected = await loadBinarized("./src/extractor/test-data/output.png");
+    const expected = await loadBinarized(
+      "./src/extractor/test-data/output.png",
+    );
     const extracted = extract(input, {
       topLeft: { x: 56, y: 94 },
       bottomLeft: { x: 88, y: 268 },

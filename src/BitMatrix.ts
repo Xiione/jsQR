@@ -24,7 +24,13 @@ export class BitMatrix {
     this.data[y * this.width + x] = v ? 1 : 0;
   }
 
-  public setRegion(left: number, top: number, width: number, height: number, v: boolean) {
+  public setRegion(
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    v: boolean,
+  ) {
     for (let y = top; y < top + height; y++) {
       for (let x = left; x < left + width; x++) {
         this.set(x, y, !!v);
