@@ -5,7 +5,7 @@ export class BitMatrix {
 
   public width: number;
   public height: number;
-  private data: Uint8ClampedArray;
+  public data: Uint8ClampedArray;
 
   constructor(data: Uint8ClampedArray, width: number) {
     this.width = width;

@@ -1,4 +1,5 @@
-import { B as BitMatrix, d as decode } from './decoder-ea6b0171.js';
+import { BitMatrix } from './BitMatrix.js';
+import { decode } from './decoder/decoder.js';
 import { locate } from './locator.js';
 import './decoder/reedsolomon/index.js';
 import './decoder/version.js';
@@ -266,16 +267,18 @@ function scan(matrix) {
         const extracted = extract(matrix, location);
         const decoded = decode(extracted.matrix);
         if (decoded) {
+            const topRight = decoded.mirrored ? extracted.mappingFunction(0, location.dimension) : extracted.mappingFunction(location.dimension, 0);
+            const bottomLeft = decoded.mirrored ? extracted.mappingFunction(location.dimension, 0) : extracted.mappingFunction(0, location.dimension);
             return {
                 binaryData: decoded.bytes,
                 data: decoded.text,
                 chunks: decoded.chunks,
                 version: decoded.version,
                 location: {
-                    topRightCorner: extracted.mappingFunction(location.dimension, 0),
+                    topRightCorner: topRight,
                     topLeftCorner: extracted.mappingFunction(0, 0),
                     bottomRightCorner: extracted.mappingFunction(location.dimension, location.dimension),
-                    bottomLeftCorner: extracted.mappingFunction(0, location.dimension),
+                    bottomLeftCorner: bottomLeft,
                     topRightFinderPattern: location.topRight,
                     topLeftFinderPattern: location.topLeft,
                     bottomLeftFinderPattern: location.bottomLeft,

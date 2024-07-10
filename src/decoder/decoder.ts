@@ -290,12 +290,10 @@ function decodeMatrix(matrix: BitMatrix) {
   if (!version) {
     return null;
   }
-
   const formatInfo = readFormatInformation(matrix);
   if (!formatInfo) {
     return null;
   }
-
   const codewords = readCodewords(matrix, version, formatInfo);
   const dataBlocks = getDataBlocks(codewords, version, formatInfo.errorCorrectionLevel);
   if (!dataBlocks) {
@@ -310,18 +308,25 @@ function decodeMatrix(matrix: BitMatrix) {
   for (const dataBlock of dataBlocks) {
     const decodeRes = rsDecode(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
     const errors = decodeRes["errors"];
+
+    if (errors >= 0)
+      console.log(errors)
+    // const bytesCorrected = rsDecodeExpected(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
     const bytesCorrected = decodeRes["bytesCorrected"];
     if (!bytesCorrected) {
       return null;
     }
-    // console.error(errors);
     for (let i = 0; i < dataBlock.numDataCodewords; i++) {
       resultBytes[resultIndex++] = bytesCorrected["get"](i);
+      // resultBytes[resultIndex++] = bytesCorrected[i];
     }
   }
 
   try {
-    return decodeData(resultBytes, version.versionNumber);
+    const res = decodeData(resultBytes, version.versionNumber);
+    // patch fix for random erroneous successful scans, an empty result is
+    // useless anyways
+    return res.text ? res : null;
   } catch {
     return null;
   }
@@ -344,5 +349,6 @@ export function decode(matrix: BitMatrix): DecodedQR {
       }
     }
   }
-  return decodeMatrix(matrix);
+  const res = decodeMatrix(matrix);
+  return res ? {...res, mirrored: true} : null;
 }

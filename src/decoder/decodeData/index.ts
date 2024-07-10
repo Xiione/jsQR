@@ -30,6 +30,7 @@ export interface DecodedQR {
   bytes: number[];
   chunks: Chunks;
   version: number;
+  mirrored: boolean;
 }
 
 export enum Mode {
@@ -186,6 +187,7 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
     bytes: [],
     chunks: [],
     version,
+    mirrored: false,
   };
 
   while (stream.available() >= 4) {
