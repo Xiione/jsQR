@@ -273,6 +273,7 @@ function scan(matrix) {
     }
     for (const location of locations) {
         const extracted = extract(matrix, location);
+        const matrixOrig = new BitMatrix(extracted.matrix.data, extracted.matrix.width);
         const decoded = decode(extracted.matrix);
         if (decoded) {
             const topRight = decoded.mirrored
@@ -296,7 +297,8 @@ function scan(matrix) {
                     bottomLeftFinderPattern: location.bottomLeft,
                     bottomRightAlignmentPattern: location.alignmentPattern,
                 },
-                matrix: extracted.matrix,
+                matrix: matrixOrig,
+                matrixCorrected: extracted.matrix,
             };
         }
     }

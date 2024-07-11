@@ -222,41 +222,43 @@ function readFormatInformation(matrix: BitMatrix) {
   }
 
   const dimension = matrix.height;
-  let topRightBottomRightFormatInfoBits = 0;
+  let topRightBottomLeftFormatInfoBits = 0;
   for (let y = dimension - 1; y >= dimension - 7; y--) {
     // bottom left
-    topRightBottomRightFormatInfoBits = pushBit(
+    topRightBottomLeftFormatInfoBits = pushBit(
       matrix.get(8, y),
-      topRightBottomRightFormatInfoBits,
+      topRightBottomLeftFormatInfoBits,
     );
   }
   for (let x = dimension - 8; x < dimension; x++) {
     // top right
-    topRightBottomRightFormatInfoBits = pushBit(
+    topRightBottomLeftFormatInfoBits = pushBit(
       matrix.get(x, 8),
-      topRightBottomRightFormatInfoBits,
+      topRightBottomLeftFormatInfoBits,
     );
   }
 
   let bestDifference = Infinity;
   let bestFormatInfo = null;
-  for (const { bits, formatInfo } of FORMAT_INFO_TABLE) {
+  for (const format of FORMAT_INFO_TABLE) {
     if (
-      bits === topLeftFormatInfoBits ||
-      bits === topRightBottomRightFormatInfoBits
+      format.bits === topLeftFormatInfoBits ||
+      format.bits === topRightBottomLeftFormatInfoBits
     ) {
-      return formatInfo;
+      return format;
     }
-    let difference = numBitsDiffering(topLeftFormatInfoBits, bits);
+    let difference = numBitsDiffering(topLeftFormatInfoBits, format.bits);
     if (difference < bestDifference) {
-      bestFormatInfo = formatInfo;
-      bestDifference = difference;
+      bestFormatInfo = format;
     }
-    if (topLeftFormatInfoBits !== topRightBottomRightFormatInfoBits) {
+    if (topLeftFormatInfoBits !== topRightBottomLeftFormatInfoBits) {
       // also try the other option
-      difference = numBitsDiffering(topRightBottomRightFormatInfoBits, bits);
+      difference = numBitsDiffering(
+        topRightBottomLeftFormatInfoBits,
+        format.bits,
+      );
       if (difference < bestDifference) {
-        bestFormatInfo = formatInfo;
+        bestFormatInfo = format;
         bestDifference = difference;
       }
     }
@@ -273,6 +275,7 @@ function getDataBlocks(codewords: number[], version: Version, ecLevel: number) {
   const dataBlocks: Array<{
     numDataCodewords: number;
     codewords: number[];
+    codewordsCorrected: number[];
   }> = [];
 
   let totalCodewords = 0;
@@ -281,6 +284,7 @@ function getDataBlocks(codewords: number[], version: Version, ecLevel: number) {
       dataBlocks.push({
         numDataCodewords: block.dataCodewordsPerBlock,
         codewords: [],
+        codewordsCorrected: [],
       });
       totalCodewords +=
         block.dataCodewordsPerBlock + ecInfo.ecCodewordsPerBlock;
@@ -327,15 +331,15 @@ function decodeMatrix(matrix: BitMatrix) {
   if (!version) {
     return null;
   }
-  const formatInfo = readFormatInformation(matrix);
-  if (!formatInfo) {
+  const format = readFormatInformation(matrix);
+  if (!format) {
     return null;
   }
-  const codewords = readCodewords(matrix, version, formatInfo);
+  const codewords = readCodewords(matrix, version, format.formatInfo);
   const dataBlocks = getDataBlocks(
     codewords,
     version,
-    formatInfo.errorCorrectionLevel,
+    format.formatInfo.errorCorrectionLevel,
   );
   if (!dataBlocks) {
     return null;
@@ -363,13 +367,22 @@ function decodeMatrix(matrix: BitMatrix) {
       resultBytes[resultIndex++] = bytesCorrected["get"](i);
       // resultBytes[resultIndex++] = bytesCorrected[i];
     }
+    for (let i = 0; i < dataBlock.codewords.length; i++) {
+      dataBlock.codewordsCorrected.push(bytesCorrected["get"](i));
+    }
   }
 
   try {
     const res = decodeData(resultBytes, version.versionNumber);
+
     // patch fix for random erroneous successful scans, an empty result is
     // useless anyways
-    return res.text ? res : null;
+    if (res.text) {
+      correctMatrix(matrix, version, format, dataBlocks);
+      return res;
+    } else {
+      return null;
+    }
   } catch {
     return null;
   }
@@ -394,4 +407,168 @@ export function decode(matrix: BitMatrix): DecodedQR {
   }
   const res = decodeMatrix(matrix);
   return res ? { ...res, mirrored: true } : null;
+}
+
+function correctMatrix(
+  matrix: BitMatrix,
+  version: Version,
+  format: { bits: number; formatInfo: FormatInformation },
+  dataBlocks: {
+    numDataCodewords: number;
+    codewords: number[];
+    codewordsCorrected: number[];
+  }[],
+) {
+  const dimension = matrix.width;
+
+  // version info if applicable
+  if (version.versionNumber + 1 > 6) {
+    // top right
+    for (let y = 0, i = 0; y <= 5; y++) {
+      for (let x = dimension - 11; x <= dimension - 9; x++, i++) {
+        matrix.set(x, y, !!((version.infoBits >> i) & 1));
+      }
+    }
+    // bottom left
+    for (let x = 0, i = 0; x <= 5; x++) {
+      for (let y = dimension - 11; y <= dimension - 9; y++, i++) {
+        matrix.set(x, y, !!((version.infoBits >> i) & 1));
+      }
+    }
+  }
+
+  // format info
+  {
+    // top left
+    let i = 0;
+    for (let y = 0; y <= 7; y++) {
+      if (y !== 6) {
+        matrix.set(8, y, !!((format.bits >> i) & 1));
+        i++;
+      }
+    }
+    for (let x = 8; x >= 0; x--) {
+      if (x !== 6) {
+        matrix.set(x, 8, !!((format.bits >> i) & 1));
+        i++;
+      }
+    }
+  }
+
+  {
+    let i = 0;
+    for (let x = dimension - 1; x >= dimension - 8; x--, i++) {
+      // top right
+      matrix.set(x, 8, !!((format.bits >> i) & 1));
+    }
+    for (let y = dimension - 7; y <= dimension - 1; y++, i++) {
+      // bottom left
+      matrix.set(8, y, !!((format.bits >> i) & 1));
+    }
+  }
+
+  // function patterns
+  matrix.setRegion(0, 0, 8, 8, false); // top left separator
+  matrix.setRegion(0, 0, 7, 7, true); // top left finder outer ring
+  matrix.setRegion(1, 1, 5, 5, false); // top left finder gap
+  matrix.setRegion(2, 2, 3, 3, true); // top left finder center
+
+  matrix.setRegion(dimension - 8, 0, 8, 8, false); // top right separator
+  matrix.setRegion(dimension - 7, 0, 7, 7, true); // top right finder outer ring
+  matrix.setRegion(dimension - 6, 1, 5, 5, false); // and so forth...
+  matrix.setRegion(dimension - 5, 2, 3, 3, true);
+
+  matrix.setRegion(0, dimension - 8, 8, 8, false); // bottom left separator + finder
+  matrix.setRegion(0, dimension - 7, 7, 7, true);
+  matrix.setRegion(1, dimension - 6, 5, 5, false);
+  matrix.setRegion(2, dimension - 5, 3, 3, true);
+
+  for (let y = 9; y < 9 + dimension - 17; y++) {
+    matrix.set(6, y, y % 2 === 0); // Vertical timing pattern
+  }
+  for (let x = 9; x < 9 + dimension - 17; x++) {
+    matrix.set(x, 6, x % 2 === 0); // Horizontal timing pattern
+  }
+
+  // Alignment patterns
+  for (const x of version.alignmentPatternCenters) {
+    for (const y of version.alignmentPatternCenters) {
+      if (
+        !(
+          (x === 6 && y === 6) ||
+          (x === 6 && y === dimension - 7) ||
+          (x === dimension - 7 && y === 6)
+        )
+      ) {
+        matrix.setRegion(x - 2, y - 2, 5, 5, true);
+        matrix.setRegion(x - 1, y - 1, 3, 3, false);
+        matrix.set(x, y, true);
+      }
+    }
+  }
+
+  const codewords: number[] = [];
+  const dataBlockIdx: number[] = new Array(dataBlocks.length).fill(0);
+  let numDone = 0;
+
+  // collect data codewords in original order
+  while (numDone < dataBlocks.length) {
+    for (let i = 0; i < dataBlocks.length; i++) {
+      let j = dataBlockIdx[i];
+      if (j < dataBlocks[i].numDataCodewords) {
+        codewords.push(dataBlocks[i].codewordsCorrected[j]);
+        if (++dataBlockIdx[i] >= dataBlocks[i].numDataCodewords) numDone++;
+      }
+    }
+  }
+  numDone = 0;
+  // collect ec codewords
+  while (numDone < dataBlocks.length) {
+    for (let i = 0; i < dataBlocks.length; i++) {
+      let j = dataBlockIdx[i];
+      if (j < dataBlocks[i].codewordsCorrected.length) {
+        codewords.push(dataBlocks[i].codewordsCorrected[j]);
+        if (++dataBlockIdx[i] >= dataBlocks[i].codewordsCorrected.length)
+          numDone++;
+      }
+    }
+  }
+
+  const dataMask = DATA_MASKS[format.formatInfo.dataMask];
+  const functionPatternMask = buildFunctionPatternMask(version);
+
+  let bytesRead = 0;
+  let bitsRead = 0;
+
+  let readingUp = true;
+  for (let columnIndex = dimension - 1; columnIndex > 0; columnIndex -= 2) {
+    if (columnIndex === 6) {
+      // Skip whole column with vertical alignment pattern;
+      columnIndex--;
+    }
+    for (let i = 0; i < dimension; i++) {
+      const y = readingUp ? dimension - 1 - i : i;
+      for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
+        const x = columnIndex - columnOffset;
+        if (!functionPatternMask.get(x, y)) {
+          bitsRead++;
+          let bit =
+            bytesRead < codewords.length
+              ? !!((codewords[bytesRead] >> (8 - bitsRead)) & 1)
+              : false;
+          if (dataMask({ y, x })) {
+            bit = !bit;
+          }
+          matrix.set(x, y, bit);
+          if (bitsRead === 8) {
+            // Whole bytes
+            bytesRead++;
+            bitsRead = 0;
+          }
+        }
+      }
+    }
+    readingUp = !readingUp;
+  }
+  return codewords;
 }

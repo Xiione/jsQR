@@ -10,7 +10,7 @@ export class BitMatrix {
   constructor(data: Uint8ClampedArray, width: number) {
     this.width = width;
     this.height = data.length / width;
-    this.data = data;
+    this.data = new Uint8ClampedArray(data);
   }
 
   public get(x: number, y: number): boolean {

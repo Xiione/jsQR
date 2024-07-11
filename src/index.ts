@@ -24,6 +24,7 @@ export interface QRCode {
     bottomRightAlignmentPattern?: Point;
   };
   matrix: BitMatrix;
+  matrixCorrected: BitMatrix;
 }
 
 function scan(matrix: BitMatrix): QRCode | null {
@@ -34,6 +35,10 @@ function scan(matrix: BitMatrix): QRCode | null {
 
   for (const location of locations) {
     const extracted = extract(matrix, location);
+    const matrixOrig = new BitMatrix(
+      extracted.matrix.data,
+      extracted.matrix.width,
+    );
     const decoded = decode(extracted.matrix);
     if (decoded) {
       const topRight = decoded.mirrored
@@ -62,7 +67,8 @@ function scan(matrix: BitMatrix): QRCode | null {
 
           bottomRightAlignmentPattern: location.alignmentPattern,
         },
-        matrix: extracted.matrix,
+        matrix: matrixOrig,
+        matrixCorrected: extracted.matrix,
       };
     }
   }

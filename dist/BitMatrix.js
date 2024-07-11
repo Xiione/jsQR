@@ -5,7 +5,7 @@ class BitMatrix {
     constructor(data, width) {
         this.width = width;
         this.height = data.length / width;
-        this.data = data;
+        this.data = new Uint8ClampedArray(data);
     }
     get(x, y) {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height) {

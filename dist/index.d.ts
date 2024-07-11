@@ -17,6 +17,7 @@ export interface QRCode {
         bottomRightAlignmentPattern?: Point;
     };
     matrix: BitMatrix;
+    matrixCorrected: BitMatrix;
 }
 export interface Options {
     inversionAttempts?: "dontInvert" | "onlyInvert" | "attemptBoth" | "invertFirst";
