@@ -720,29 +720,21 @@ function correctMatrix(matrix, version, format, dataBlocks) {
     const codewords = [];
     const dataBlockIdx = new Array(dataBlocks.length).fill(0);
     let numDone = 0;
-    // collect data codewords in original order
-    while (numDone < dataBlocks.length) {
-        for (let i = 0; i < dataBlocks.length; i++) {
-            let j = dataBlockIdx[i];
-            if (j < dataBlocks[i].numDataCodewords) {
-                codewords.push(dataBlocks[i].codewordsCorrected[j]);
-                if (++dataBlockIdx[i] >= dataBlocks[i].numDataCodewords)
-                    numDone++;
+    function collectCodewords(getLimit) {
+        numDone = 0;
+        while (numDone < dataBlocks.length) {
+            for (let i = 0; i < dataBlocks.length; i++) {
+                const j = dataBlockIdx[i];
+                if (j < getLimit(dataBlocks[i])) {
+                    codewords.push(dataBlocks[i].codewordsCorrected[j]);
+                    if (++dataBlockIdx[i] >= getLimit(dataBlocks[i]))
+                        numDone++;
+                }
             }
         }
     }
-    numDone = 0;
-    // collect ec codewords
-    while (numDone < dataBlocks.length) {
-        for (let i = 0; i < dataBlocks.length; i++) {
-            let j = dataBlockIdx[i];
-            if (j < dataBlocks[i].codewordsCorrected.length) {
-                codewords.push(dataBlocks[i].codewordsCorrected[j]);
-                if (++dataBlockIdx[i] >= dataBlocks[i].codewordsCorrected.length)
-                    numDone++;
-            }
-        }
-    }
+    collectCodewords((block) => block.numDataCodewords);
+    collectCodewords((block) => block.codewordsCorrected.length);
     const dataMask = DATA_MASKS[format.formatInfo.dataMask];
     const functionPatternMask = buildFunctionPatternMask(version);
     let bytesRead = 0;
