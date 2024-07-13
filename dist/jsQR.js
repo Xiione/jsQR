@@ -276,12 +276,12 @@ function scan(matrix) {
         const matrixOrig = new BitMatrix(extracted.matrix.data, extracted.matrix.width);
         const decoded = decode(extracted.matrix);
         if (decoded) {
-            const topRight = decoded.mirrored
-                ? extracted.mappingFunction(0, location.dimension)
-                : extracted.mappingFunction(location.dimension, 0);
-            const bottomLeft = decoded.mirrored
-                ? extracted.mappingFunction(location.dimension, 0)
-                : extracted.mappingFunction(0, location.dimension);
+            if (decoded.mirrored)
+                matrixOrig.mirror();
+            const a = extracted.mappingFunction(0, location.dimension);
+            const b = extracted.mappingFunction(location.dimension, 0);
+            const topRight = decoded.mirrored ? a : b;
+            const bottomLeft = decoded.mirrored ? b : a;
             return {
                 binaryData: decoded.bytes,
                 data: decoded.text,

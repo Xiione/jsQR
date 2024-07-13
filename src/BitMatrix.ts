@@ -37,4 +37,15 @@ export class BitMatrix {
       }
     }
   }
+
+  public mirror() {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = x + 1; y < this.height; y++) {
+        if (this.get(x, y) !== this.get(y, x)) {
+          this.set(x, y, !this.get(x, y));
+          this.set(y, x, !this.get(y, x));
+        }
+      }
+    }
+  }
 }

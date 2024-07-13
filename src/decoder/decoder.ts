@@ -58,7 +58,7 @@ const FORMAT_INFO_TABLE = [
   { bits: 0x2bed, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
 ];
 
-const DATA_MASKS = [
+export const DATA_MASKS = [
   (p: Point) => (p.y + p.x) % 2 === 0,
   (p: Point) => p.y % 2 === 0,
   (p: Point) => p.x % 3 === 0,
@@ -399,14 +399,8 @@ export function decode(matrix: BitMatrix): DecodedQR {
     return result;
   }
   // Decoding didn't work, try mirroring the QR across the topLeft -> bottomRight line.
-  for (let x = 0; x < matrix.width; x++) {
-    for (let y = x + 1; y < matrix.height; y++) {
-      if (matrix.get(x, y) !== matrix.get(y, x)) {
-        matrix.set(x, y, !matrix.get(x, y));
-        matrix.set(y, x, !matrix.get(y, x));
-      }
-    }
-  }
+  matrix.mirror();
+
   const res = decodeMatrix(matrix);
   return res ? { ...res, mirrored: true } : null;
 }

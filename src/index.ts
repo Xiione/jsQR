@@ -2,7 +2,6 @@ import { binarize } from "./binarizer";
 import { BitMatrix } from "./BitMatrix";
 import { Chunks } from "./decoder/decodeData";
 import { decode } from "./decoder/decoder";
-import { Version } from "./decoder/version";
 import { extract } from "./extractor";
 import { locate, Point } from "./locator";
 
@@ -41,12 +40,11 @@ function scan(matrix: BitMatrix): QRCode | null {
     );
     const decoded = decode(extracted.matrix);
     if (decoded) {
-      const topRight = decoded.mirrored
-        ? extracted.mappingFunction(0, location.dimension)
-        : extracted.mappingFunction(location.dimension, 0);
-      const bottomLeft = decoded.mirrored
-        ? extracted.mappingFunction(location.dimension, 0)
-        : extracted.mappingFunction(0, location.dimension);
+      if (decoded.mirrored) matrixOrig.mirror();
+      const a = extracted.mappingFunction(0, location.dimension);
+      const b = extracted.mappingFunction(location.dimension, 0);
+      const topRight = decoded.mirrored ? a : b;
+      const bottomLeft = decoded.mirrored ? b : a;
       return {
         binaryData: decoded.bytes,
         data: decoded.text,

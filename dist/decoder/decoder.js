@@ -630,14 +630,7 @@ function decode(matrix) {
         return result;
     }
     // Decoding didn't work, try mirroring the QR across the topLeft -> bottomRight line.
-    for (let x = 0; x < matrix.width; x++) {
-        for (let y = x + 1; y < matrix.height; y++) {
-            if (matrix.get(x, y) !== matrix.get(y, x)) {
-                matrix.set(x, y, !matrix.get(x, y));
-                matrix.set(y, x, !matrix.get(y, x));
-            }
-        }
-    }
+    matrix.mirror();
     const res = decodeMatrix(matrix);
     return res ? Object.assign(Object.assign({}, res), { mirrored: true }) : null;
 }
@@ -733,7 +726,9 @@ function correctMatrix(matrix, version, format, dataBlocks) {
             }
         }
     }
+    // collect data codewords in original order
     collectCodewords((block) => block.numDataCodewords);
+    // collect ec codewords
     collectCodewords((block) => block.codewordsCorrected.length);
     const dataMask = DATA_MASKS[format.formatInfo.dataMask];
     const functionPatternMask = buildFunctionPatternMask(version);
@@ -771,5 +766,5 @@ function correctMatrix(matrix, version, format, dataBlocks) {
     return codewords;
 }
 
-export { buildFunctionPatternMask, decode };
+export { DATA_MASKS, buildFunctionPatternMask, decode };
 //# sourceMappingURL=decoder.js.map
