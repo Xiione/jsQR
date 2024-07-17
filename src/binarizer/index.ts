@@ -176,7 +176,7 @@ export function binarize(
       pixelCount,
     );
     bufferOffset += pixelCount;
-    binarized = new BitMatrix(binarizedBuffer, width);
+    binarized = BitMatrix.createFromBinarization(binarizedBuffer, width);
   } else {
     binarized = BitMatrix.createEmpty(width, height);
   }
@@ -189,7 +189,7 @@ export function binarize(
         bufferOffset,
         pixelCount,
       );
-      inverted = new BitMatrix(invertedBuffer, width);
+      inverted = BitMatrix.createFromBinarization(invertedBuffer, width);
     } else {
       inverted = BitMatrix.createEmpty(width, height);
     }

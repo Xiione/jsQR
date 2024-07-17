@@ -18,6 +18,8 @@ export interface QRCode {
     };
     matrix: BitMatrix;
     matrixCorrected: BitMatrix;
+    ecLevel: number;
+    dataMask: number;
 }
 export interface Options {
     inversionAttempts?: "dontInvert" | "onlyInvert" | "attemptBoth" | "invertFirst";

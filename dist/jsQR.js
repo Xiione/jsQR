@@ -129,7 +129,7 @@ function binarize(data, width, height, returnInverted, greyscaleWeights, canOver
     if (canOverwriteImage) {
         const binarizedBuffer = new Uint8ClampedArray(data.buffer, bufferOffset, pixelCount);
         bufferOffset += pixelCount;
-        binarized = new BitMatrix(binarizedBuffer, width);
+        binarized = BitMatrix.createFromBinarization(binarizedBuffer, width);
     }
     else {
         binarized = BitMatrix.createEmpty(width, height);
@@ -138,7 +138,7 @@ function binarize(data, width, height, returnInverted, greyscaleWeights, canOver
     if (returnInverted) {
         if (canOverwriteImage) {
             const invertedBuffer = new Uint8ClampedArray(data.buffer, bufferOffset, pixelCount);
-            inverted = new BitMatrix(invertedBuffer, width);
+            inverted = BitMatrix.createFromBinarization(invertedBuffer, width);
         }
         else {
             inverted = BitMatrix.createEmpty(width, height);
@@ -273,7 +273,7 @@ function scan(matrix) {
     }
     for (const location of locations) {
         const extracted = extract(matrix, location);
-        const matrixOrig = new BitMatrix(extracted.matrix.data, extracted.matrix.width);
+        const matrixOrig = BitMatrix.createFromPacked(extracted.matrix.data, extracted.matrix.width, extracted.matrix.height);
         const decoded = decode(extracted.matrix);
         if (decoded) {
             if (decoded.mirrored)
@@ -299,6 +299,8 @@ function scan(matrix) {
                 },
                 matrix: matrixOrig,
                 matrixCorrected: extracted.matrix,
+                ecLevel: decoded.ecLevel,
+                dataMask: decoded.dataMask,
             };
         }
     }

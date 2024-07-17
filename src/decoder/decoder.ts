@@ -376,6 +376,8 @@ function decodeMatrix(matrix: BitMatrix) {
 
   try {
     const res = decodeData(resultBytes, version.versionNumber);
+    res.ecLevel = format.formatInfo.errorCorrectionLevel;
+    res.dataMask = format.formatInfo.dataMask;
 
     // patch fix for random erroneous successful scans, an empty result is
     // useless anyways

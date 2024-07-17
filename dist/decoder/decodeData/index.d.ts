@@ -23,6 +23,8 @@ export interface DecodedQR {
     chunks: Chunks;
     version: number;
     mirrored: boolean;
+    ecLevel: number;
+    dataMask: number;
 }
 export declare enum Mode {
     Numeric = "numeric",

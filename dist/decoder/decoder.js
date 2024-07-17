@@ -225,6 +225,8 @@ function decode$1(data, version) {
         chunks: [],
         version,
         mirrored: false,
+        ecLevel: -1,
+        dataMask: -1,
     };
     while (stream.available() >= 4) {
         const mode = stream.readBits(4);
@@ -607,6 +609,8 @@ function decodeMatrix(matrix) {
     }
     try {
         const res = decode$1(resultBytes, version.versionNumber);
+        res.ecLevel = format.formatInfo.errorCorrectionLevel;
+        res.dataMask = format.formatInfo.dataMask;
         // patch fix for random erroneous successful scans, an empty result is
         // useless anyways
         if (res.text) {
