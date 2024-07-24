@@ -3,10 +3,16 @@ import GenericGFPoly from "./GenericGFPoly";
 // @ts-ignore
 import rsiscool from "./wasm/rsiscool.js";
 
-let wasmModule: any;
+let wasmModule: any = null;
+let moduleLoading: Promise<any> = null;
 
 export async function initDecoder() {
-  wasmModule = await rsiscool();
+  if (!getDecoderInitialized() && moduleLoading) {
+    await moduleLoading;
+  } else {
+    moduleLoading = rsiscool();
+    wasmModule = await moduleLoading;
+  }
 }
 
 export function getDecoderInitialized() {
