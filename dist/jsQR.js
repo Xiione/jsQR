@@ -1,6 +1,7 @@
 import { BitMatrix } from './BitMatrix.js';
 import { decode } from './decoder/decoder.js';
 import { locate } from './locator.js';
+import './decoder/decodeData/index.js';
 import './decoder/reedsolomon/index.js';
 import './decoder/version.js';
 
@@ -301,6 +302,7 @@ function scan(matrix) {
                 matrixCorrected: extracted.matrix,
                 ecLevel: decoded.ecLevel,
                 dataMask: decoded.dataMask,
+                streamMappings: decoded.streamMappings,
             };
         }
     }

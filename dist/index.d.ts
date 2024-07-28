@@ -1,5 +1,6 @@
 import { BitMatrix } from "./BitMatrix";
 import { Chunks } from "./decoder/decodeData";
+import { StreamInfo } from "./decoder/decodeData/BitStream";
 import { Point } from "./locator";
 export interface QRCode {
     binaryData: number[];
@@ -20,6 +21,7 @@ export interface QRCode {
     matrixCorrected: BitMatrix;
     ecLevel: number;
     dataMask: number;
+    streamMappings: Map<number, StreamInfo>;
 }
 export interface Options {
     inversionAttempts?: "dontInvert" | "onlyInvert" | "attemptBoth" | "invertFirst";

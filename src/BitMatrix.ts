@@ -1,7 +1,10 @@
+import { Point } from "./Point";
+
 export class BitMatrix {
   public static createEmpty(width: number, height: number) {
     const mat = new BitMatrix(width, height);
     mat.data = new Uint8ClampedArray(Math.ceil((width * height) / 8));
+    mat.data.fill(0);
     return mat;
   }
 
@@ -83,5 +86,21 @@ export class BitMatrix {
         }
       }
     }
+  }
+
+  public equals(matrix: BitMatrix) {
+    const m = (this.width * this.height) % 8;
+    let i;
+    for (i = 0; i < this.data.length - (m > 0 ? 1 : 0); i++) {
+      if (this.data[i] !== matrix.data[i]) {
+        return false;
+      }
+    }
+    for (let j = 0; j < m; j++) {
+      if (((this.data[i] >> j) & 1) ^ ((matrix.data[i] >> j) & 1)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

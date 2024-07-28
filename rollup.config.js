@@ -5,6 +5,7 @@ export default {
     input: {
         'jsQR': 'src/index.ts',
         'decoder/decoder': 'src/decoder/decoder.ts',
+        'decoder/decodeData/index': 'src/decoder/decodeData/index.ts',
         'decoder/reedsolomon/index': 'src/decoder/reedsolomon/index.ts',
         'decoder/version': 'src/decoder/version.ts',
         'locator': 'src/locator/index.ts',

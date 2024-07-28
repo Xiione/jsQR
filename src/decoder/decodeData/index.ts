@@ -1,5 +1,5 @@
 // tslint:disable:no-bitwise
-import { BitStream } from "./BitStream";
+import { BitStream, StreamInfo, StreamMapping } from "./BitStream";
 
 export interface Chunk {
   type: Mode;
@@ -33,6 +33,7 @@ export interface DecodedQR {
   mirrored: boolean;
   ecLevel: number;
   dataMask: number;
+  streamMappings: Map<number, StreamInfo>;
 }
 
 export enum Mode {
@@ -42,6 +43,7 @@ export enum Mode {
   Kanji = "kanji",
   ECI = "eci",
   StructuredAppend = "structuredappend",
+  None = "none",
 }
 
 enum ModeByte {
@@ -61,10 +63,14 @@ function decodeNumeric(stream: BitStream, size: number) {
   let text = "";
 
   const characterCountSize = [10, 12, 14][size];
-  let length = stream.readBits(characterCountSize);
+  let length = stream.readBits(
+    characterCountSize,
+    Mode.Numeric,
+    StreamMapping.CharacterCountInfo,
+  );
   // Read digits in groups of 3
   while (length >= 3) {
-    const num = stream.readBits(10);
+    const num = stream.readBits(10, Mode.Numeric);
     if (num >= 1000) {
       throw new Error("Invalid numeric value above 999");
     }
@@ -80,7 +86,7 @@ function decodeNumeric(stream: BitStream, size: number) {
 
   // If the number of digits aren't a multiple of 3, the remaining digits are special cased.
   if (length === 2) {
-    const num = stream.readBits(7);
+    const num = stream.readBits(7, Mode.Numeric);
     if (num >= 100) {
       throw new Error("Invalid numeric value above 99");
     }
@@ -91,7 +97,7 @@ function decodeNumeric(stream: BitStream, size: number) {
     bytes.push(48 + a, 48 + b);
     text += a.toString() + b.toString();
   } else if (length === 1) {
-    const num = stream.readBits(4);
+    const num = stream.readBits(4, Mode.Numeric);
     if (num >= 10) {
       throw new Error("Invalid numeric value above 9");
     }
@@ -156,9 +162,13 @@ function decodeAlphanumeric(stream: BitStream, size: number) {
   let text = "";
 
   const characterCountSize = [9, 11, 13][size];
-  let length = stream.readBits(characterCountSize);
+  let length = stream.readBits(
+    characterCountSize,
+    Mode.Alphanumeric,
+    StreamMapping.CharacterCountInfo,
+  );
   while (length >= 2) {
-    const v = stream.readBits(11);
+    const v = stream.readBits(11, Mode.Alphanumeric);
 
     const a = Math.floor(v / 45);
     const b = v % 45;
@@ -172,7 +182,7 @@ function decodeAlphanumeric(stream: BitStream, size: number) {
   }
 
   if (length === 1) {
-    const a = stream.readBits(6);
+    const a = stream.readBits(6, Mode.Alphanumeric);
     bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0));
     text += AlphanumericCharacterCodes[a];
   }
@@ -185,9 +195,13 @@ function decodeByte(stream: BitStream, size: number) {
   let text = "";
 
   const characterCountSize = [8, 16, 16][size];
-  const length = stream.readBits(characterCountSize);
+  const length = stream.readBits(
+    characterCountSize,
+    Mode.Byte,
+    StreamMapping.CharacterCountInfo,
+  );
   for (let i = 0; i < length; i++) {
-    const b = stream.readBits(8);
+    const b = stream.readBits(8, Mode.Byte);
     bytes.push(b);
   }
   try {
@@ -205,9 +219,13 @@ function decodeKanji(stream: BitStream, size: number) {
   const bytes: number[] = [];
 
   const characterCountSize = [8, 10, 12][size];
-  const length = stream.readBits(characterCountSize);
+  const length = stream.readBits(
+    characterCountSize,
+    Mode.Kanji,
+    StreamMapping.CharacterCountInfo,
+  );
   for (let i = 0; i < length; i++) {
-    const k = stream.readBits(13);
+    const k = stream.readBits(13, Mode.Kanji);
 
     let c = (Math.floor(k / 0xc0) << 8) | k % 0xc0;
     if (c < 0x1f00) {
@@ -237,27 +255,29 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
     mirrored: false,
     ecLevel: -1,
     dataMask: -1,
+    streamMappings: null
   };
 
   while (stream.available() >= 4) {
-    const mode = stream.readBits(4);
+    const mode = stream.readBits(4, Mode.None, StreamMapping.Mode);
     if (mode === ModeByte.Terminator) {
+      result.streamMappings = stream.getMappings();
       return result;
     } else if (mode === ModeByte.ECI) {
-      if (stream.readBits(1) === 0) {
+      if (stream.readBits(1, Mode.ECI, StreamMapping.ECIData) === 0) {
         result.chunks.push({
           type: Mode.ECI,
-          assignmentNumber: stream.readBits(7),
+          assignmentNumber: stream.readBits(7, Mode.ECI),
         });
-      } else if (stream.readBits(1) === 0) {
+      } else if (stream.readBits(1, Mode.ECI, StreamMapping.ECIData) === 0) {
         result.chunks.push({
           type: Mode.ECI,
-          assignmentNumber: stream.readBits(14),
+          assignmentNumber: stream.readBits(14, Mode.ECI),
         });
-      } else if (stream.readBits(1) === 0) {
+      } else if (stream.readBits(1, Mode.ECI, StreamMapping.ECIData) === 0) {
         result.chunks.push({
           type: Mode.ECI,
-          assignmentNumber: stream.readBits(21),
+          assignmentNumber: stream.readBits(21, Mode.ECI),
         });
       } else {
         // ECI data seems corrupted
@@ -303,15 +323,19 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
     } else if (mode === ModeByte.StructuredAppend) {
       result.chunks.push({
         type: Mode.StructuredAppend,
-        currentSequence: stream.readBits(4),
-        totalSequence: stream.readBits(4),
-        parity: stream.readBits(8),
+        currentSequence: stream.readBits(4, Mode.StructuredAppend, StreamMapping.SACurrentSequence),
+        totalSequence: stream.readBits(4, Mode.StructuredAppend, StreamMapping.SATotalSequence),
+        parity: stream.readBits(8, Mode.StructuredAppend, StreamMapping.SAParity),
       });
     }
   }
 
   // If there is no data left, or the remaining bits are all 0, then that counts as a termination marker
-  if (stream.available() === 0 || stream.readBits(stream.available()) === 0) {
+  if (
+    stream.available() === 0 ||
+    stream.readBits(stream.available(), Mode.None, StreamMapping.Padding) === 0
+  ) {
+    result.streamMappings = stream.getMappings();
     return result;
   }
 }

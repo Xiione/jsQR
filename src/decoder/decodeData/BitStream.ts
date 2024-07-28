@@ -1,18 +1,53 @@
 // tslint:disable:no-bitwise
 
+import { Mode } from ".";
+
+export enum StreamMapping {
+  Padding = -1,
+  Mode = -2,
+  CharacterCountInfo = -3,
+  // structured append
+  SACurrentSequence = -4,
+  SATotalSequence = -5,
+  SAParity = -6,
+  ECIData = -7,
+}
+
+export interface StreamInfo {
+  length: number;
+  mapping?: StreamMapping;
+  charIndex?: number;
+  mode: Mode;
+}
+
 export class BitStream {
   private bytes: Uint8ClampedArray;
   private byteOffset: number = 0;
   private bitOffset: number = 0;
 
+  private charsRead: number = 0;
+  // {start bit, [length, mapping]}
+  private mappings: Map<number, StreamInfo> = new Map();
+
   constructor(bytes: Uint8ClampedArray) {
     this.bytes = bytes;
   }
 
-  public readBits(numBits: number): number {
+  public readBits(
+    numBits: number,
+    mode: Mode,
+    mapping?: StreamMapping,
+  ): number {
     if (numBits < 1 || numBits > 32 || numBits > this.available()) {
       throw new Error("Cannot read " + numBits.toString() + " bits");
     }
+
+    this.mappings.set(this.byteOffset * 8 + this.bitOffset, {
+      length: numBits,
+      mapping,
+      charIndex: mapping ? undefined : this.charsRead++,
+      mode,
+    });
 
     let result = 0;
     // First, read remainder from current byte
@@ -53,5 +88,9 @@ export class BitStream {
 
   public available(): number {
     return 8 * (this.bytes.length - this.byteOffset) - this.bitOffset;
+  }
+
+  public getMappings() {
+    return this.mappings;
   }
 }

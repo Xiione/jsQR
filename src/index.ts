@@ -1,6 +1,7 @@
 import { binarize } from "./binarizer";
 import { BitMatrix } from "./BitMatrix";
 import { Chunks } from "./decoder/decodeData";
+import { StreamInfo } from "./decoder/decodeData/BitStream";
 import { decode } from "./decoder/decoder";
 import { extract } from "./extractor";
 import { locate, Point } from "./locator";
@@ -26,6 +27,7 @@ export interface QRCode {
   matrixCorrected: BitMatrix;
   ecLevel: number;
   dataMask: number;
+  streamMappings: Map<number, StreamInfo>;
 }
 
 function scan(matrix: BitMatrix): QRCode | null {
@@ -72,6 +74,7 @@ function scan(matrix: BitMatrix): QRCode | null {
         matrixCorrected: extracted.matrix,
         ecLevel: decoded.ecLevel,
         dataMask: decoded.dataMask,
+        streamMappings: decoded.streamMappings,
       };
     }
   }

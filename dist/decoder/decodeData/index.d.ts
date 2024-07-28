@@ -1,3 +1,4 @@
+import { StreamInfo } from "./BitStream";
 export interface Chunk {
     type: Mode;
     text: string;
@@ -25,6 +26,7 @@ export interface DecodedQR {
     mirrored: boolean;
     ecLevel: number;
     dataMask: number;
+    streamMappings: Map<number, StreamInfo>;
 }
 export declare enum Mode {
     Numeric = "numeric",
@@ -32,6 +34,7 @@ export declare enum Mode {
     Byte = "byte",
     Kanji = "kanji",
     ECI = "eci",
-    StructuredAppend = "structuredappend"
+    StructuredAppend = "structuredappend",
+    None = "none"
 }
 export declare function decode(data: Uint8ClampedArray, version: number): DecodedQR;

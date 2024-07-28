@@ -11,4 +11,5 @@ export declare class BitMatrix {
     set(x: number, y: number, v: boolean): void;
     setRegion(left: number, top: number, width: number, height: number, v: boolean): void;
     mirror(): void;
+    equals(matrix: BitMatrix): boolean;
 }
