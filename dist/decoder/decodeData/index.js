@@ -209,11 +209,13 @@ function decodeByte(stream, size) {
         const b = stream.readBits(8, Mode.Byte);
         bytes.push(b);
     }
-    try {
-        text += decodeURIComponent(bytes.map((b) => `%${("0" + b.toString(16)).substr(-2)}`).join(""));
-    }
-    catch (_a) {
-        // failed to decode
+    for (const byte of bytes) {
+        try {
+            text += decodeURIComponent(`%${("0" + byte.toString(16)).slice(-2)}`);
+        }
+        catch (_a) {
+            // failed to decode
+        }
     }
     return { bytes, text };
 }
@@ -247,7 +249,7 @@ function decode(data, version) {
         mirrored: false,
         ecLevel: -1,
         dataMask: -1,
-        streamMappings: null
+        streamMappings: null,
     };
     while (stream.available() >= 4) {
         const mode = stream.readBits(4, Mode.None, StreamMapping.Mode);

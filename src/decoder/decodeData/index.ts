@@ -204,12 +204,12 @@ function decodeByte(stream: BitStream, size: number) {
     const b = stream.readBits(8, Mode.Byte);
     bytes.push(b);
   }
-  try {
-    text += decodeURIComponent(
-      bytes.map((b) => `%${("0" + b.toString(16)).substr(-2)}`).join(""),
-    );
-  } catch {
-    // failed to decode
+  for (const byte of bytes) {
+    try {
+      text += decodeURIComponent(`%${("0" + byte.toString(16)).slice(-2)}`);
+    } catch {
+      // failed to decode
+    }
   }
 
   return { bytes, text };
@@ -255,7 +255,7 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
     mirrored: false,
     ecLevel: -1,
     dataMask: -1,
-    streamMappings: null
+    streamMappings: null,
   };
 
   while (stream.available() >= 4) {
@@ -323,9 +323,21 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
     } else if (mode === ModeByte.StructuredAppend) {
       result.chunks.push({
         type: Mode.StructuredAppend,
-        currentSequence: stream.readBits(4, Mode.StructuredAppend, StreamMapping.SACurrentSequence),
-        totalSequence: stream.readBits(4, Mode.StructuredAppend, StreamMapping.SATotalSequence),
-        parity: stream.readBits(8, Mode.StructuredAppend, StreamMapping.SAParity),
+        currentSequence: stream.readBits(
+          4,
+          Mode.StructuredAppend,
+          StreamMapping.SACurrentSequence,
+        ),
+        totalSequence: stream.readBits(
+          4,
+          Mode.StructuredAppend,
+          StreamMapping.SATotalSequence,
+        ),
+        parity: stream.readBits(
+          8,
+          Mode.StructuredAppend,
+          StreamMapping.SAParity,
+        ),
       });
     }
   }
