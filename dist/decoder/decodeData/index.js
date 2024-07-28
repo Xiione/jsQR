@@ -209,14 +209,15 @@ function decodeByte(stream, size) {
         const b = stream.readBits(8, Mode.Byte);
         bytes.push(b);
     }
-    for (const byte of bytes) {
-        try {
-            text += decodeURIComponent(`%${("0" + byte.toString(16)).slice(-2)}`);
-        }
-        catch (_a) {
-            // failed to decode
-        }
-    }
+    const decoder = new TextDecoder("utf-8");
+    // for (const byte of bytes) {
+    //   try {
+    //     // text += decodeURIComponent(`%${("0" + byte.toString(16)).slice(-2)}`);
+    //   } catch {
+    //     console.error("Failed to decode ASCII character:", byte.toString(16));
+    //   }
+    // }
+    text += decoder.decode(new Uint8Array(bytes));
     return { bytes, text };
 }
 function decodeKanji(stream, size) {
