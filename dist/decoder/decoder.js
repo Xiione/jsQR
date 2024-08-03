@@ -154,10 +154,12 @@ function readVersion(matrix) {
         const cur = VERSIONS[version - 1];
         if (cur.infoBits === topRightVersionBits ||
             cur.infoBits === bottomLeftVersionBits) {
+            topRightBestDiff = Math.min(topRightBestDiff, numBitsDiffering(topRightVersionBits, cur.infoBits));
+            bottomLeftBestDiff = Math.min(bottomLeftBestDiff, numBitsDiffering(bottomLeftVersionBits, cur.infoBits));
             return {
                 version,
-                topRightBestDiff: topRightBestDiff === Infinity ? null : topRightBestDiff,
-                bottomLeftBestDiff: bottomLeftBestDiff === Infinity ? null : bottomLeftBestDiff,
+                topRightBestDiff,
+                bottomLeftBestDiff
             };
         }
         let difference = numBitsDiffering(topRightVersionBits, cur.infoBits);
@@ -220,7 +222,7 @@ function readFormatInformation(matrix) {
         if (format.bits === topLeftFormatInfoBits ||
             format.bits === topRightBottomLeftFormatInfoBits) {
             topLeftBestDiff = Math.min(topLeftBestDiff, numBitsDiffering(topLeftFormatInfoBits, format.bits));
-            topRightBottomLeftBestDiff = Math.min(topRightBottomLeftBestDiff, numBitsDiffering(topRightBottomLeftBestDiff, format.bits));
+            topRightBottomLeftBestDiff = Math.min(topRightBottomLeftBestDiff, numBitsDiffering(topRightBottomLeftFormatInfoBits, format.bits));
             return {
                 format,
                 topLeftBestDiff,
@@ -272,7 +274,7 @@ function getDataBlocks(codewords, version, ecLevel) {
     // In some cases the QR code will be malformed enough that we pull off more or less than we should.
     // If we pull off less there's nothing we can do.
     // If we pull off more we can safely truncate
-    if (codewords.length < totalCodewords) {
+    if (!codewords || codewords.length < totalCodewords) {
         return null;
     }
     codewords = codewords.slice(0, totalCodewords);
@@ -515,5 +517,5 @@ function correctMatrix(matrix, version, format, dataBlocks) {
     return codewords;
 }
 
-export { DATA_MASKS, buildFunctionPatternMask, decode };
+export { DATA_MASKS, FORMAT_INFO_TABLE, buildFunctionPatternMask, decode, getDataBlocks, readCodewords, readFormatInformation, readVersion };
 //# sourceMappingURL=decoder.js.map

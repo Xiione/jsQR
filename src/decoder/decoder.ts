@@ -23,7 +23,7 @@ function pushBit(bit: any, byte: number) {
 }
 // tslint:enable:no-bitwise
 
-const FORMAT_INFO_TABLE: FormatInformationWithBits[] = [
+export const FORMAT_INFO_TABLE: FormatInformationWithBits[] = [
   { bits: 0x5412, formatInfo: { errorCorrectionLevel: 1, dataMask: 0 } },
   { bits: 0x5125, formatInfo: { errorCorrectionLevel: 1, dataMask: 1 } },
   { bits: 0x5e7c, formatInfo: { errorCorrectionLevel: 1, dataMask: 2 } },
@@ -69,7 +69,7 @@ export const DATA_MASKS = [
   (p: Point) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
 ];
 
-interface FormatInformation {
+export interface FormatInformation {
   errorCorrectionLevel: number;
   dataMask: number;
 }
@@ -79,7 +79,7 @@ interface FormatInformationWithBits {
   formatInfo: FormatInformation;
 }
 
-interface DataBlock {
+export interface DataBlock {
   numDataCodewords: number;
   codewords: number[];
   codewordsCorrected: number[];
@@ -139,7 +139,7 @@ export function buildFunctionPatternMask(version: Version): BitMatrix {
   return matrix;
 }
 
-function readCodewords(
+export function readCodewords(
   matrix: BitMatrix,
   version: Version,
   formatInfo: FormatInformation,
@@ -185,7 +185,7 @@ function readCodewords(
   return codewords;
 }
 
-function readVersion(matrix: BitMatrix): VersionResult {
+export function readVersion(matrix: BitMatrix): VersionResult {
   const dimension = matrix.height;
 
   const provisionalVersion = Math.floor((dimension - 17) / 4);
@@ -222,12 +222,18 @@ function readVersion(matrix: BitMatrix): VersionResult {
       cur.infoBits === topRightVersionBits ||
       cur.infoBits === bottomLeftVersionBits
     ) {
+      topRightBestDiff = Math.min(
+        topRightBestDiff,
+        numBitsDiffering(topRightVersionBits, cur.infoBits),
+      );
+      bottomLeftBestDiff = Math.min(
+        bottomLeftBestDiff,
+        numBitsDiffering(bottomLeftVersionBits, cur.infoBits),
+      );
       return {
         version,
-        topRightBestDiff:
-          topRightBestDiff === Infinity ? null : topRightBestDiff,
-        bottomLeftBestDiff:
-          bottomLeftBestDiff === Infinity ? null : bottomLeftBestDiff,
+        topRightBestDiff,
+        bottomLeftBestDiff
       };
     }
 
@@ -261,7 +267,7 @@ function readVersion(matrix: BitMatrix): VersionResult {
   };
 }
 
-function readFormatInformation(matrix: BitMatrix): FormatResult {
+export function readFormatInformation(matrix: BitMatrix): FormatResult {
   let topLeftFormatInfoBits = 0;
   for (let x = 0; x <= 8; x++) {
     if (x !== 6) {
@@ -308,7 +314,7 @@ function readFormatInformation(matrix: BitMatrix): FormatResult {
       );
       topRightBottomLeftBestDiff = Math.min(
         topRightBottomLeftBestDiff,
-        numBitsDiffering(topRightBottomLeftBestDiff, format.bits),
+        numBitsDiffering(topRightBottomLeftFormatInfoBits, format.bits),
       );
       return {
         format,
@@ -351,7 +357,11 @@ function readFormatInformation(matrix: BitMatrix): FormatResult {
   };
 }
 
-function getDataBlocks(codewords: number[], version: Version, ecLevel: number) {
+export function getDataBlocks(
+  codewords: number[],
+  version: Version,
+  ecLevel: number,
+) {
   const ecInfo = version.errorCorrectionLevels[ecLevel];
   const dataBlocks: DataBlock[] = [];
 
@@ -371,7 +381,7 @@ function getDataBlocks(codewords: number[], version: Version, ecLevel: number) {
   // In some cases the QR code will be malformed enough that we pull off more or less than we should.
   // If we pull off less there's nothing we can do.
   // If we pull off more we can safely truncate
-  if (codewords.length < totalCodewords) {
+  if (!codewords || codewords.length < totalCodewords) {
     return null;
   }
   codewords = codewords.slice(0, totalCodewords);

@@ -27,7 +27,7 @@ export class BitStream {
 
   private charsRead: number = 0;
   // {start bit, [length, mapping]}
-  private mappings: Map<number, StreamInfo> = new Map();
+  private mappings: Map<number, StreamInfo> = new Map<number, StreamInfo>();
 
   constructor(bytes: Uint8ClampedArray) {
     this.bytes = bytes;
