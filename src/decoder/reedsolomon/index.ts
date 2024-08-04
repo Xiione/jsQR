@@ -7,11 +7,18 @@ let wasmModule: any = null;
 let moduleLoading: Promise<any> = null;
 
 export async function initDecoder() {
-  if (!getDecoderInitialized() && moduleLoading) {
-    await moduleLoading;
-  } else {
-    moduleLoading = rsiscool();
-    wasmModule = await moduleLoading;
+  if (!getDecoderInitialized()) {
+    if (moduleLoading) {
+      await moduleLoading;
+    } else {
+      moduleLoading = new Promise<void>((resolve, reject) => {
+        rsiscool().then((module: any) => {
+          wasmModule = module;
+          resolve();
+        }).catch(reject);
+      })
+      await moduleLoading;
+    }
   }
 }
 
