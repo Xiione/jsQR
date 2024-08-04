@@ -27,10 +27,13 @@ export class BitStream {
 
   private charsRead: number = 0;
   // {start bit, [length, mapping]}
-  private mappings: Map<number, StreamInfo> = new Map<number, StreamInfo>();
+  private mappings: Map<number, StreamInfo> = null;
 
-  constructor(bytes: Uint8ClampedArray) {
+  constructor(bytes: Uint8ClampedArray, doMapping = true) {
     this.bytes = bytes;
+    if (doMapping) {
+      this.mappings = new Map<number, StreamInfo>();
+    }
   }
 
   public readBits(
@@ -42,7 +45,7 @@ export class BitStream {
       throw new Error("Cannot read " + numBits.toString() + " bits");
     }
 
-    this.mappings.set(this.byteOffset * 8 + this.bitOffset, {
+    this.mappings?.set(this.byteOffset * 8 + this.bitOffset, {
       length: numBits,
       mapping,
       charIndex: mapping ? undefined : this.charsRead++,

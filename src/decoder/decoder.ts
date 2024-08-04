@@ -88,8 +88,8 @@ export interface DataBlock {
 export interface VersionResult {
   // can be guessed instead of decoded
   version: number;
-  topRightBestDiff: number | null;
-  bottomLeftBestDiff: number | null;
+  topRightBestDiff: number;
+  bottomLeftBestDiff: number;
 }
 
 export interface FormatResult {
@@ -485,12 +485,11 @@ function decodeMatrix(matrix: BitMatrix, doCorrection = true): DecodedQR {
 
   try {
     const res = decodeData(resultBytes, version.versionNumber);
-    res.ecLevel = formatResult.format.formatInfo.errorCorrectionLevel;
-    res.dataMask = formatResult.format.formatInfo.dataMask;
-
     // patch fix for random erroneous successful scans, an empty result is
     // useless anyways
-    if (res.text) {
+    if (res && res.text) {
+      res.ecLevel = formatResult.format.formatInfo.errorCorrectionLevel;
+      res.dataMask = formatResult.format.formatInfo.dataMask;
       if (doCorrection) {
         correctMatrix(matrix, version, formatResult.format, dataBlocks);
       }

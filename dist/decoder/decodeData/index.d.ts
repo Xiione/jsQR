@@ -1,4 +1,4 @@
-import { StreamInfo } from "./BitStream";
+import { BitStream, StreamInfo } from "./BitStream";
 export interface Chunk {
     type: Mode;
     text: string;
@@ -28,6 +28,10 @@ export interface DecodedQR {
     dataMask: number;
     streamMappings: Map<number, StreamInfo>;
 }
+interface DecodeTextResult {
+    bytes: number[];
+    text: string;
+}
 export declare enum Mode {
     Numeric = "numeric",
     Alphanumeric = "alphanumeric",
@@ -37,4 +41,18 @@ export declare enum Mode {
     StructuredAppend = "structuredappend",
     None = "none"
 }
+export declare enum ModeByte {
+    Terminator = 0,
+    Numeric = 1,
+    Alphanumeric = 2,
+    Byte = 4,
+    Kanji = 8,
+    ECI = 7,
+    StructuredAppend = 3
+}
+export declare function decodeNumeric(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
+export declare function decodeAlphanumeric(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
+export declare function decodeByte(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
+export declare function decodeKanji(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
 export declare function decode(data: Uint8ClampedArray, version: number): DecodedQR;
+export {};

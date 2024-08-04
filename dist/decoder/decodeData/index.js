@@ -1,75 +1,4 @@
-// tslint:disable:no-bitwise
-var StreamMapping;
-(function (StreamMapping) {
-    StreamMapping[StreamMapping["Padding"] = -1] = "Padding";
-    StreamMapping[StreamMapping["Mode"] = -2] = "Mode";
-    StreamMapping[StreamMapping["CharacterCountInfo"] = -3] = "CharacterCountInfo";
-    // structured append
-    StreamMapping[StreamMapping["SACurrentSequence"] = -4] = "SACurrentSequence";
-    StreamMapping[StreamMapping["SATotalSequence"] = -5] = "SATotalSequence";
-    StreamMapping[StreamMapping["SAParity"] = -6] = "SAParity";
-    StreamMapping[StreamMapping["ECIData"] = -7] = "ECIData";
-})(StreamMapping || (StreamMapping = {}));
-class BitStream {
-    constructor(bytes) {
-        this.byteOffset = 0;
-        this.bitOffset = 0;
-        this.charsRead = 0;
-        // {start bit, [length, mapping]}
-        this.mappings = new Map();
-        this.bytes = bytes;
-    }
-    readBits(numBits, mode, mapping) {
-        if (numBits < 1 || numBits > 32 || numBits > this.available()) {
-            throw new Error("Cannot read " + numBits.toString() + " bits");
-        }
-        this.mappings.set(this.byteOffset * 8 + this.bitOffset, {
-            length: numBits,
-            mapping,
-            charIndex: mapping ? undefined : this.charsRead++,
-            mode,
-        });
-        let result = 0;
-        // First, read remainder from current byte
-        if (this.bitOffset > 0) {
-            const bitsLeft = 8 - this.bitOffset;
-            const toRead = numBits < bitsLeft ? numBits : bitsLeft;
-            const bitsToNotRead = bitsLeft - toRead;
-            const mask = (0xff >> (8 - toRead)) << bitsToNotRead;
-            result = (this.bytes[this.byteOffset] & mask) >> bitsToNotRead;
-            numBits -= toRead;
-            this.bitOffset += toRead;
-            if (this.bitOffset === 8) {
-                this.bitOffset = 0;
-                this.byteOffset++;
-            }
-        }
-        // Next read whole bytes
-        if (numBits > 0) {
-            while (numBits >= 8) {
-                result = (result << 8) | (this.bytes[this.byteOffset] & 0xff);
-                this.byteOffset++;
-                numBits -= 8;
-            }
-            // Finally read a partial byte
-            if (numBits > 0) {
-                const bitsToNotRead = 8 - numBits;
-                const mask = (0xff >> bitsToNotRead) << bitsToNotRead;
-                result =
-                    (result << numBits) |
-                        ((this.bytes[this.byteOffset] & mask) >> bitsToNotRead);
-                this.bitOffset += numBits;
-            }
-        }
-        return result;
-    }
-    available() {
-        return 8 * (this.bytes.length - this.byteOffset) - this.bitOffset;
-    }
-    getMappings() {
-        return this.mappings;
-    }
-}
+import { StreamMapping, BitStream } from './BitStream.js';
 
 // tslint:disable:no-bitwise
 var Mode;
@@ -94,8 +23,10 @@ var ModeByte;
     // FNC1FirstPosition = 0x5,
     // FNC1SecondPosition = 0x9,
 })(ModeByte || (ModeByte = {}));
-function decodeNumeric(stream, size) {
-    const bytes = [];
+function decodeNumeric(stream, size, textOnly = false) {
+    let bytes;
+    if (!textOnly)
+        bytes = [];
     let text = "";
     const characterCountSize = [10, 12, 14][size];
     let length = stream.readBits(characterCountSize, Mode.Numeric, StreamMapping.CharacterCountInfo);
@@ -108,7 +39,8 @@ function decodeNumeric(stream, size) {
         const a = Math.floor(num / 100);
         const b = Math.floor(num / 10) % 10;
         const c = num % 10;
-        bytes.push(48 + a, 48 + b, 48 + c);
+        if (!textOnly)
+            bytes.push(48 + a, 48 + b, 48 + c);
         text += a.toString() + b.toString() + c.toString();
         length -= 3;
     }
@@ -120,7 +52,8 @@ function decodeNumeric(stream, size) {
         }
         const a = Math.floor(num / 10);
         const b = num % 10;
-        bytes.push(48 + a, 48 + b);
+        if (!textOnly)
+            bytes.push(48 + a, 48 + b);
         text += a.toString() + b.toString();
     }
     else if (length === 1) {
@@ -128,10 +61,14 @@ function decodeNumeric(stream, size) {
         if (num >= 10) {
             throw new Error("Invalid numeric value above 9");
         }
-        bytes.push(48 + num);
+        if (!textOnly)
+            bytes.push(48 + num);
         text += num.toString();
     }
-    return { bytes, text };
+    if (!textOnly)
+        return { bytes, text };
+    else
+        return text;
 }
 const AlphanumericCharacterCodes = [
     "0",
@@ -180,8 +117,10 @@ const AlphanumericCharacterCodes = [
     "/",
     ":",
 ];
-function decodeAlphanumeric(stream, size) {
-    const bytes = [];
+function decodeAlphanumeric(stream, size, textOnly = false) {
+    let bytes;
+    if (!textOnly)
+        bytes = [];
     let text = "";
     const characterCountSize = [9, 11, 13][size];
     let length = stream.readBits(characterCountSize, Mode.Alphanumeric, StreamMapping.CharacterCountInfo);
@@ -189,18 +128,23 @@ function decodeAlphanumeric(stream, size) {
         const v = stream.readBits(11, Mode.Alphanumeric);
         const a = Math.floor(v / 45);
         const b = v % 45;
-        bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0), AlphanumericCharacterCodes[b].charCodeAt(0));
+        if (!textOnly)
+            bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0), AlphanumericCharacterCodes[b].charCodeAt(0));
         text += AlphanumericCharacterCodes[a] + AlphanumericCharacterCodes[b];
         length -= 2;
     }
     if (length === 1) {
         const a = stream.readBits(6, Mode.Alphanumeric);
-        bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0));
+        if (!textOnly)
+            bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0));
         text += AlphanumericCharacterCodes[a];
     }
-    return { bytes, text };
+    if (!textOnly)
+        return { bytes, text };
+    else
+        return text;
 }
-function decodeByte(stream, size) {
+function decodeByte(stream, size, textOnly = false) {
     const bytes = [];
     let text = "";
     const characterCountSize = [8, 16, 16][size];
@@ -218,9 +162,12 @@ function decodeByte(stream, size) {
     //   }
     // }
     text += decoder.decode(new Uint8Array(bytes));
-    return { bytes, text };
+    if (!textOnly)
+        return { bytes, text };
+    else
+        return text;
 }
-function decodeKanji(stream, size) {
+function decodeKanji(stream, size, textOnly = false) {
     const bytes = [];
     const characterCountSize = [8, 10, 12][size];
     const length = stream.readBits(characterCountSize, Mode.Kanji, StreamMapping.CharacterCountInfo);
@@ -236,7 +183,10 @@ function decodeKanji(stream, size) {
         bytes.push(c >> 8, c & 0xff);
     }
     const text = new TextDecoder("shift-jis").decode(Uint8Array.from(bytes));
-    return { bytes, text };
+    if (!textOnly)
+        return { bytes, text };
+    else
+        return text;
 }
 function decode(data, version) {
     const stream = new BitStream(data);
@@ -255,10 +205,12 @@ function decode(data, version) {
     while (stream.available() >= 4) {
         const mode = stream.readBits(4, Mode.None, StreamMapping.Mode);
         if (mode === ModeByte.Terminator) {
+            console.log("TERMINATOR");
             result.streamMappings = stream.getMappings();
             return result;
         }
         else if (mode === ModeByte.ECI) {
+            console.log("ECI");
             if (stream.readBits(1, Mode.ECI, StreamMapping.ECIData) === 0) {
                 result.chunks.push({
                     type: Mode.ECI,
@@ -286,6 +238,7 @@ function decode(data, version) {
             }
         }
         else if (mode === ModeByte.Numeric) {
+            console.log("NUMERIC");
             const numericResult = decodeNumeric(stream, size);
             result.text += numericResult.text;
             result.bytes.push(...numericResult.bytes);
@@ -295,6 +248,7 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.Alphanumeric) {
+            console.log("A-NUMERIC");
             const alphanumericResult = decodeAlphanumeric(stream, size);
             result.text += alphanumericResult.text;
             result.bytes.push(...alphanumericResult.bytes);
@@ -304,6 +258,7 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.Byte) {
+            console.log("BYTE");
             const byteResult = decodeByte(stream, size);
             result.text += byteResult.text;
             result.bytes.push(...byteResult.bytes);
@@ -314,6 +269,7 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.Kanji) {
+            console.log("KANJI");
             const kanjiResult = decodeKanji(stream, size);
             result.text += kanjiResult.text;
             result.bytes.push(...kanjiResult.bytes);
@@ -324,6 +280,7 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.StructuredAppend) {
+            console.log("SA");
             result.chunks.push({
                 type: Mode.StructuredAppend,
                 currentSequence: stream.readBits(4, Mode.StructuredAppend, StreamMapping.SACurrentSequence),
@@ -340,5 +297,5 @@ function decode(data, version) {
     }
 }
 
-export { Mode, decode };
+export { Mode, ModeByte, decode, decodeAlphanumeric, decodeByte, decodeKanji, decodeNumeric };
 //# sourceMappingURL=index.js.map

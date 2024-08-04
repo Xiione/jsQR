@@ -36,6 +36,11 @@ export interface DecodedQR {
   streamMappings: Map<number, StreamInfo>;
 }
 
+interface DecodeTextResult {
+  bytes: number[];
+  text: string;
+}
+
 export enum Mode {
   Numeric = "numeric",
   Alphanumeric = "alphanumeric",
@@ -46,7 +51,7 @@ export enum Mode {
   None = "none",
 }
 
-enum ModeByte {
+export enum ModeByte {
   Terminator = 0x0,
   Numeric = 0x1,
   Alphanumeric = 0x2,
@@ -58,8 +63,13 @@ enum ModeByte {
   // FNC1SecondPosition = 0x9,
 }
 
-function decodeNumeric(stream: BitStream, size: number) {
-  const bytes: number[] = [];
+export function decodeNumeric(
+  stream: BitStream,
+  size: number,
+  textOnly = false,
+): DecodeTextResult | string {
+  let bytes: number[];
+  if (!textOnly) bytes = [];
   let text = "";
 
   const characterCountSize = [10, 12, 14][size];
@@ -79,7 +89,7 @@ function decodeNumeric(stream: BitStream, size: number) {
     const b = Math.floor(num / 10) % 10;
     const c = num % 10;
 
-    bytes.push(48 + a, 48 + b, 48 + c);
+    if (!textOnly) bytes.push(48 + a, 48 + b, 48 + c);
     text += a.toString() + b.toString() + c.toString();
     length -= 3;
   }
@@ -94,7 +104,7 @@ function decodeNumeric(stream: BitStream, size: number) {
     const a = Math.floor(num / 10);
     const b = num % 10;
 
-    bytes.push(48 + a, 48 + b);
+    if (!textOnly) bytes.push(48 + a, 48 + b);
     text += a.toString() + b.toString();
   } else if (length === 1) {
     const num = stream.readBits(4, Mode.Numeric);
@@ -102,11 +112,12 @@ function decodeNumeric(stream: BitStream, size: number) {
       throw new Error("Invalid numeric value above 9");
     }
 
-    bytes.push(48 + num);
+    if (!textOnly) bytes.push(48 + num);
     text += num.toString();
   }
 
-  return { bytes, text };
+  if (!textOnly) return { bytes, text };
+  else return text;
 }
 
 const AlphanumericCharacterCodes = [
@@ -157,8 +168,13 @@ const AlphanumericCharacterCodes = [
   ":",
 ];
 
-function decodeAlphanumeric(stream: BitStream, size: number) {
-  const bytes: number[] = [];
+export function decodeAlphanumeric(
+  stream: BitStream,
+  size: number,
+  textOnly = false,
+): DecodeTextResult | string {
+  let bytes: number[];
+  if (!textOnly) bytes = [];
   let text = "";
 
   const characterCountSize = [9, 11, 13][size];
@@ -173,24 +189,30 @@ function decodeAlphanumeric(stream: BitStream, size: number) {
     const a = Math.floor(v / 45);
     const b = v % 45;
 
-    bytes.push(
-      AlphanumericCharacterCodes[a].charCodeAt(0),
-      AlphanumericCharacterCodes[b].charCodeAt(0),
-    );
+    if (!textOnly)
+      bytes.push(
+        AlphanumericCharacterCodes[a].charCodeAt(0),
+        AlphanumericCharacterCodes[b].charCodeAt(0),
+      );
     text += AlphanumericCharacterCodes[a] + AlphanumericCharacterCodes[b];
     length -= 2;
   }
 
   if (length === 1) {
     const a = stream.readBits(6, Mode.Alphanumeric);
-    bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0));
+    if (!textOnly) bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0));
     text += AlphanumericCharacterCodes[a];
   }
 
-  return { bytes, text };
+  if (!textOnly) return { bytes, text };
+  else return text;
 }
 
-function decodeByte(stream: BitStream, size: number) {
+export function decodeByte(
+  stream: BitStream,
+  size: number,
+  textOnly = false,
+): DecodeTextResult | string {
   const bytes: number[] = [];
   let text = "";
 
@@ -215,10 +237,15 @@ function decodeByte(stream: BitStream, size: number) {
   // }
   text += decoder.decode(new Uint8Array(bytes));
 
-  return { bytes, text };
+  if (!textOnly) return { bytes, text };
+  else return text;
 }
 
-function decodeKanji(stream: BitStream, size: number) {
+export function decodeKanji(
+  stream: BitStream,
+  size: number,
+  textOnly = false,
+): DecodeTextResult | string {
   const bytes: number[] = [];
 
   const characterCountSize = [8, 10, 12][size];
@@ -241,7 +268,9 @@ function decodeKanji(stream: BitStream, size: number) {
   }
 
   const text = new TextDecoder("shift-jis").decode(Uint8Array.from(bytes));
-  return { bytes, text };
+
+  if (!textOnly) return { bytes, text };
+  else return text;
 }
 
 export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
@@ -290,7 +319,7 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
         });
       }
     } else if (mode === ModeByte.Numeric) {
-      const numericResult = decodeNumeric(stream, size);
+      const numericResult = decodeNumeric(stream, size) as DecodeTextResult;
       result.text += numericResult.text;
       result.bytes.push(...numericResult.bytes);
       result.chunks.push({
@@ -298,7 +327,7 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
         text: numericResult.text,
       });
     } else if (mode === ModeByte.Alphanumeric) {
-      const alphanumericResult = decodeAlphanumeric(stream, size);
+      const alphanumericResult = decodeAlphanumeric(stream, size) as DecodeTextResult;
       result.text += alphanumericResult.text;
       result.bytes.push(...alphanumericResult.bytes);
       result.chunks.push({
@@ -306,7 +335,7 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
         text: alphanumericResult.text,
       });
     } else if (mode === ModeByte.Byte) {
-      const byteResult = decodeByte(stream, size);
+      const byteResult = decodeByte(stream, size) as DecodeTextResult;
       result.text += byteResult.text;
       result.bytes.push(...byteResult.bytes);
       result.chunks.push({
@@ -315,7 +344,7 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
         text: byteResult.text,
       });
     } else if (mode === ModeByte.Kanji) {
-      const kanjiResult = decodeKanji(stream, size);
+      const kanjiResult = decodeKanji(stream, size) as DecodeTextResult;
       result.text += kanjiResult.text;
       result.bytes.push(...kanjiResult.bytes);
       result.chunks.push({

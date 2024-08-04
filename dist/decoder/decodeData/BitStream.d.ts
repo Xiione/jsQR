@@ -20,7 +20,7 @@ export declare class BitStream {
     private bitOffset;
     private charsRead;
     private mappings;
-    constructor(bytes: Uint8ClampedArray);
+    constructor(bytes: Uint8ClampedArray, doMapping?: boolean);
     readBits(numBits: number, mode: Mode, mapping?: StreamMapping): number;
     available(): number;
     getMappings(): Map<number, StreamInfo>;

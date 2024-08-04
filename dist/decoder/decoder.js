@@ -2,6 +2,7 @@ import { BitMatrix } from '../BitMatrix.js';
 import { decode as decode$1 } from './decodeData/index.js';
 import { decodeWASM } from './reedsolomon/index.js';
 import { VERSIONS } from './version.js';
+import './decodeData/BitStream.js';
 
 // tslint:disable:no-bitwise
 function numBitsDiffering(x, y) {
@@ -353,11 +354,11 @@ function decodeMatrix(matrix, doCorrection = true) {
     }
     try {
         const res = decode$1(resultBytes, version.versionNumber);
-        res.ecLevel = formatResult.format.formatInfo.errorCorrectionLevel;
-        res.dataMask = formatResult.format.formatInfo.dataMask;
         // patch fix for random erroneous successful scans, an empty result is
         // useless anyways
-        if (res.text) {
+        if (res && res.text) {
+            res.ecLevel = formatResult.format.formatInfo.errorCorrectionLevel;
+            res.dataMask = formatResult.format.formatInfo.dataMask;
             if (doCorrection) {
                 correctMatrix(matrix, version, formatResult.format, dataBlocks);
             }

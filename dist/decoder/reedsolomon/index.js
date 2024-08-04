@@ -291,12 +291,19 @@ function ed(){function a(){if(!cd&&(cd=!0,m.calledRun=!0,!ka)){m.noFSInit||Rc||(
 let wasmModule = null;
 let moduleLoading = null;
 async function initDecoder() {
-    if (!getDecoderInitialized() && moduleLoading) {
-        await moduleLoading;
-    }
-    else {
-        moduleLoading = rsiscool();
-        wasmModule = await moduleLoading;
+    if (!getDecoderInitialized()) {
+        if (moduleLoading) {
+            await moduleLoading;
+        }
+        else {
+            moduleLoading = new Promise((resolve, reject) => {
+                rsiscool().then((module) => {
+                    wasmModule = module;
+                    resolve();
+                }).catch(reject);
+            });
+            await moduleLoading;
+        }
     }
 }
 function getDecoderInitialized() {

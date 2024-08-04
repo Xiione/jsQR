@@ -19,8 +19,8 @@ export interface DataBlock {
 }
 export interface VersionResult {
     version: number;
-    topRightBestDiff: number | null;
-    bottomLeftBestDiff: number | null;
+    topRightBestDiff: number;
+    bottomLeftBestDiff: number;
 }
 export interface FormatResult {
     format: FormatInformationWithBits | null;
