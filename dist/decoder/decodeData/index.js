@@ -205,12 +205,10 @@ function decode(data, version) {
     while (stream.available() >= 4) {
         const mode = stream.readBits(4, Mode.None, StreamMapping.Mode);
         if (mode === ModeByte.Terminator) {
-            console.log("TERMINATOR");
             result.streamMappings = stream.getMappings();
             return result;
         }
         else if (mode === ModeByte.ECI) {
-            console.log("ECI");
             if (stream.readBits(1, Mode.ECI, StreamMapping.ECIData) === 0) {
                 result.chunks.push({
                     type: Mode.ECI,
@@ -238,7 +236,6 @@ function decode(data, version) {
             }
         }
         else if (mode === ModeByte.Numeric) {
-            console.log("NUMERIC");
             const numericResult = decodeNumeric(stream, size);
             result.text += numericResult.text;
             result.bytes.push(...numericResult.bytes);
@@ -248,7 +245,6 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.Alphanumeric) {
-            console.log("A-NUMERIC");
             const alphanumericResult = decodeAlphanumeric(stream, size);
             result.text += alphanumericResult.text;
             result.bytes.push(...alphanumericResult.bytes);
@@ -258,7 +254,6 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.Byte) {
-            console.log("BYTE");
             const byteResult = decodeByte(stream, size);
             result.text += byteResult.text;
             result.bytes.push(...byteResult.bytes);
@@ -269,7 +264,6 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.Kanji) {
-            console.log("KANJI");
             const kanjiResult = decodeKanji(stream, size);
             result.text += kanjiResult.text;
             result.bytes.push(...kanjiResult.bytes);
@@ -280,7 +274,6 @@ function decode(data, version) {
             });
         }
         else if (mode === ModeByte.StructuredAppend) {
-            console.log("SA");
             result.chunks.push({
                 type: Mode.StructuredAppend,
                 currentSequence: stream.readBits(4, Mode.StructuredAppend, StreamMapping.SACurrentSequence),
