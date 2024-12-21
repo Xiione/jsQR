@@ -1,8 +1,7 @@
 import { BitMatrix } from '../BitMatrix.js';
-import { decode as decode$1 } from './decodeData/index.js';
+import { d as decode$1 } from '../index-1d1c8b1f.js';
 import { decodeWASM } from './reedsolomon/index.js';
 import { VERSIONS } from './version.js';
-import './decodeData/BitStream.js';
 
 // tslint:disable:no-bitwise
 function numBitsDiffering(x, y) {

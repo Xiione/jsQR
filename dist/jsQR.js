@@ -1,8 +1,7 @@
 import { BitMatrix } from './BitMatrix.js';
 import { decode } from './decoder/decoder.js';
 import { locate } from './locator.js';
-import './decoder/decodeData/index.js';
-import './decoder/decodeData/BitStream.js';
+import './index-1d1c8b1f.js';
 import './decoder/reedsolomon/index.js';
 import './decoder/version.js';
 

@@ -120,7 +120,7 @@ export function decodeNumeric(
   else return text;
 }
 
-const AlphanumericCharacterCodes = [
+export const AlphanumericCharacterCodes = [
   "0",
   "1",
   "2",

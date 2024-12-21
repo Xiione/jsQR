@@ -51,6 +51,7 @@ export declare enum ModeByte {
     StructuredAppend = 3
 }
 export declare function decodeNumeric(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
+export declare const AlphanumericCharacterCodes: string[];
 export declare function decodeAlphanumeric(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
 export declare function decodeByte(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;
 export declare function decodeKanji(stream: BitStream, size: number, textOnly?: boolean): DecodeTextResult | string;

@@ -1,6 +1,6 @@
 // tslint:disable:no-bitwise
 
-import { Mode } from ".";
+import { Mode, ModeByte } from ".";
 
 export enum StreamMapping {
   Padding = -1,
@@ -14,10 +14,11 @@ export enum StreamMapping {
 }
 
 export interface StreamInfo {
+  mode: Mode;
   length: number;
   mapping?: StreamMapping;
   charIndex?: number;
-  mode: Mode;
+  data: number;
 }
 
 export class BitStream {
@@ -44,23 +45,18 @@ export class BitStream {
     if (numBits < 1 || numBits > 32 || numBits > this.available()) {
       throw new Error("Cannot read " + numBits.toString() + " bits");
     }
+    let remaining = numBits;
 
-    this.mappings?.set(this.byteOffset * 8 + this.bitOffset, {
-      length: numBits,
-      mapping,
-      charIndex: mapping ? undefined : this.charsRead++,
-      mode,
-    });
-
+    const key = this.byteOffset * 8 + this.bitOffset;
     let result = 0;
     // First, read remainder from current byte
     if (this.bitOffset > 0) {
       const bitsLeft = 8 - this.bitOffset;
-      const toRead = numBits < bitsLeft ? numBits : bitsLeft;
+      const toRead = remaining < bitsLeft ? remaining : bitsLeft;
       const bitsToNotRead = bitsLeft - toRead;
       const mask = (0xff >> (8 - toRead)) << bitsToNotRead;
       result = (this.bytes[this.byteOffset] & mask) >> bitsToNotRead;
-      numBits -= toRead;
+      remaining -= toRead;
       this.bitOffset += toRead;
       if (this.bitOffset === 8) {
         this.bitOffset = 0;
@@ -69,23 +65,58 @@ export class BitStream {
     }
 
     // Next read whole bytes
-    if (numBits > 0) {
-      while (numBits >= 8) {
+    if (remaining > 0) {
+      while (remaining >= 8) {
         result = (result << 8) | (this.bytes[this.byteOffset] & 0xff);
         this.byteOffset++;
-        numBits -= 8;
+        remaining -= 8;
       }
 
       // Finally read a partial byte
-      if (numBits > 0) {
-        const bitsToNotRead = 8 - numBits;
+      if (remaining > 0) {
+        const bitsToNotRead = 8 - remaining;
         const mask = (0xff >> bitsToNotRead) << bitsToNotRead;
         result =
-          (result << numBits) |
+          (result << remaining) |
           ((this.bytes[this.byteOffset] & mask) >> bitsToNotRead);
-        this.bitOffset += numBits;
+        this.bitOffset += remaining;
       }
     }
+
+    if (mapping === StreamMapping.Mode) {
+      switch (result as ModeByte) {
+        case ModeByte.Terminator:
+          mode = Mode.None;
+          break;
+        case ModeByte.Numeric:
+          mode = Mode.Numeric;
+          break;
+        case ModeByte.Alphanumeric:
+          mode = Mode.Alphanumeric;
+          break;
+        case ModeByte.Byte:
+          mode = Mode.Byte;
+          break;
+        case ModeByte.Kanji:
+          mode = Mode.Kanji;
+          break;
+        case ModeByte.ECI:
+          mode = Mode.ECI;
+          break;
+        case ModeByte.StructuredAppend:
+          mode = Mode.StructuredAppend;
+          break;
+      }
+    }
+
+    this.mappings?.set(key, {
+      mode,
+      length: numBits,
+      mapping,
+      charIndex: mapping ? undefined : this.charsRead++,
+      data: result,
+    });
+
     return result;
   }
 

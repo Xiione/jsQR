@@ -9,10 +9,11 @@ export declare enum StreamMapping {
     ECIData = -7
 }
 export interface StreamInfo {
+    mode: Mode;
     length: number;
     mapping?: StreamMapping;
     charIndex?: number;
-    mode: Mode;
+    data: number;
 }
 export declare class BitStream {
     private bytes;

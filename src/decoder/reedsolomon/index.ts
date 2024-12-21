@@ -190,9 +190,16 @@ export function decodeJS(bytes: number[], twoS: number) {
   return outputBytes;
 }
 
-export function decodeWASM(bytes: number[], twoS: number) {
+export function decodeWASM(bytes: Uint8Array, twoS: number) {
   if (!wasmModule) {
-    throw new Error("decodeWASM not yet initialized");
+    throw new Error("WASM module not yet initialized");
   }
   return wasmModule["decodeWASM"](bytes, twoS);
+}
+
+export function validateWASM(bytes: Uint8Array, twoS: number) {
+  if (!wasmModule) {
+    throw new Error("WASM module not yet initialized");
+  }
+  return wasmModule["validateWASM"](bytes, twoS);
 }
