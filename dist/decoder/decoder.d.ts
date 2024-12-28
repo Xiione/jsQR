@@ -8,7 +8,7 @@ export interface FormatInformation {
     errorCorrectionLevel: number;
     dataMask: number;
 }
-interface FormatInformationWithBits {
+export interface FormatInformationWithBits {
     bits: number;
     formatInfo: FormatInformation;
 }
@@ -21,11 +21,15 @@ export interface VersionResult {
     version: number;
     topRightBestDiff: number;
     bottomLeftBestDiff: number;
+    topRightCorrectedVersion: Version | null;
+    bottomLeftCorrectedVersion: Version | null;
 }
 export interface FormatResult {
     format: FormatInformationWithBits | null;
     topLeftBestDiff: number;
     topRightBottomLeftBestDiff: number;
+    topLeftCorrectedFormat: FormatInformationWithBits | null;
+    topRightBottomLeftCorrectedFormat: FormatInformationWithBits | null;
 }
 export interface DecodeResult {
     decodedQR: DecodedQR | null;
@@ -35,8 +39,7 @@ export interface DecodeResult {
 }
 export declare function buildFunctionPatternMask(version: Version): BitMatrix;
 export declare function readCodewords(matrix: BitMatrix, version: Version, formatInfo: FormatInformation): number[];
-export declare function readVersion(matrix: BitMatrix): VersionResult;
-export declare function readFormatInformation(matrix: BitMatrix): FormatResult;
+export declare function readVersion(matrix: BitMatrix, returnOnMatch?: boolean): VersionResult;
+export declare function readFormatInformation(matrix: BitMatrix, returnOnMatch?: boolean): FormatResult;
 export declare function getDataBlocks(codewords: number[], version: Version, ecLevel: number): DataBlock[];
 export declare function decode(matrix: BitMatrix): DecodedQR;
-export {};

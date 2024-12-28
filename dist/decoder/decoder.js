@@ -123,7 +123,7 @@ function readCodewords(matrix, version, formatInfo) {
     }
     return codewords;
 }
-function readVersion(matrix) {
+function readVersion(matrix, returnOnMatch = true) {
     const dimension = matrix.height;
     const provisionalVersion = Math.floor((dimension - 17) / 4);
     if (provisionalVersion <= 6) {
@@ -132,6 +132,8 @@ function readVersion(matrix) {
             topRightBestDiff: null,
             bottomLeftBestDiff: null,
             version: provisionalVersion,
+            topRightCorrectedVersion: null,
+            bottomLeftCorrectedVersion: null,
         };
     }
     let topRightVersionBits = 0;
@@ -150,25 +152,37 @@ function readVersion(matrix) {
     let topRightBestDiff = Infinity;
     let bottomLeftBestDiff = Infinity;
     let bestVersion;
-    for (let version = 1; version <= VERSIONS.length; version++) {
+    let topRightCorrectedVersion = null;
+    let bottomLeftCorrectedVersion = null;
+    for (let version = 7; version <= VERSIONS.length; version++) {
         const cur = VERSIONS[version - 1];
-        if (cur.infoBits === topRightVersionBits ||
-            cur.infoBits === bottomLeftVersionBits) {
-            topRightBestDiff = Math.min(topRightBestDiff, numBitsDiffering(topRightVersionBits, cur.infoBits));
-            bottomLeftBestDiff = Math.min(bottomLeftBestDiff, numBitsDiffering(bottomLeftVersionBits, cur.infoBits));
-            return {
-                version,
-                topRightBestDiff,
-                bottomLeftBestDiff
-            };
+        if (returnOnMatch) {
+            if (cur.infoBits === topRightVersionBits ||
+                cur.infoBits === bottomLeftVersionBits) {
+                topRightBestDiff = Math.min(topRightBestDiff, numBitsDiffering(topRightVersionBits, cur.infoBits));
+                bottomLeftBestDiff = Math.min(bottomLeftBestDiff, numBitsDiffering(bottomLeftVersionBits, cur.infoBits));
+                return {
+                    version,
+                    topRightBestDiff,
+                    bottomLeftBestDiff,
+                    topRightCorrectedVersion,
+                    bottomLeftCorrectedVersion,
+                };
+            }
         }
         let difference = numBitsDiffering(topRightVersionBits, cur.infoBits);
+        if (difference <= 3 && difference < topRightBestDiff) {
+            topRightCorrectedVersion = cur;
+        }
         topRightBestDiff = Math.min(topRightBestDiff, difference);
         if (difference < bestDifference) {
             bestVersion = version;
             bestDifference = difference;
         }
         difference = numBitsDiffering(bottomLeftVersionBits, cur.infoBits);
+        if (difference <= 3 && difference < bottomLeftBestDiff) {
+            bottomLeftCorrectedVersion = cur;
+        }
         bottomLeftBestDiff = Math.min(bottomLeftBestDiff, difference);
         if (difference < bestDifference) {
             bestVersion = version;
@@ -182,15 +196,19 @@ function readVersion(matrix) {
             version: bestVersion,
             topRightBestDiff,
             bottomLeftBestDiff,
+            topRightCorrectedVersion,
+            bottomLeftCorrectedVersion,
         };
     }
     return {
         version: provisionalVersion,
         topRightBestDiff,
         bottomLeftBestDiff,
+        topRightCorrectedVersion,
+        bottomLeftCorrectedVersion,
     };
 }
-function readFormatInformation(matrix) {
+function readFormatInformation(matrix, returnOnMatch = true) {
     let topLeftFormatInfoBits = 0;
     for (let x = 0; x <= 8; x++) {
         if (x !== 6) {
@@ -218,24 +236,36 @@ function readFormatInformation(matrix) {
     let topLeftBestDiff = Infinity;
     let topRightBottomLeftBestDiff = Infinity;
     let bestFormatInfo = null;
+    let topLeftCorrectedFormat = null;
+    let topRightBottomLeftCorrectedFormat = null;
     for (const format of FORMAT_INFO_TABLE) {
-        if (format.bits === topLeftFormatInfoBits ||
-            format.bits === topRightBottomLeftFormatInfoBits) {
-            topLeftBestDiff = Math.min(topLeftBestDiff, numBitsDiffering(topLeftFormatInfoBits, format.bits));
-            topRightBottomLeftBestDiff = Math.min(topRightBottomLeftBestDiff, numBitsDiffering(topRightBottomLeftFormatInfoBits, format.bits));
-            return {
-                format,
-                topLeftBestDiff,
-                topRightBottomLeftBestDiff,
-            };
+        if (returnOnMatch) {
+            if (format.bits === topLeftFormatInfoBits ||
+                format.bits === topRightBottomLeftFormatInfoBits) {
+                topLeftBestDiff = Math.min(topLeftBestDiff, numBitsDiffering(topLeftFormatInfoBits, format.bits));
+                topRightBottomLeftBestDiff = Math.min(topRightBottomLeftBestDiff, numBitsDiffering(topRightBottomLeftFormatInfoBits, format.bits));
+                return {
+                    format,
+                    topLeftBestDiff,
+                    topRightBottomLeftBestDiff,
+                    topLeftCorrectedFormat,
+                    topRightBottomLeftCorrectedFormat,
+                };
+            }
         }
         let difference = numBitsDiffering(topLeftFormatInfoBits, format.bits);
+        if (difference <= 3 && difference < topLeftBestDiff) {
+            topLeftCorrectedFormat = format;
+        }
         topLeftBestDiff = Math.min(topLeftBestDiff, difference);
         if (difference < bestDifference) {
             bestFormatInfo = format;
             bestDifference = difference;
         }
         difference = numBitsDiffering(topRightBottomLeftFormatInfoBits, format.bits);
+        if (difference <= 3 && difference < topRightBottomLeftBestDiff) {
+            topRightBottomLeftCorrectedFormat = format;
+        }
         topRightBottomLeftBestDiff = Math.min(topRightBottomLeftBestDiff, difference);
         if (difference < bestDifference) {
             bestFormatInfo = format;
@@ -248,12 +278,16 @@ function readFormatInformation(matrix) {
             format: bestFormatInfo,
             topLeftBestDiff,
             topRightBottomLeftBestDiff,
+            topLeftCorrectedFormat,
+            topRightBottomLeftCorrectedFormat,
         };
     }
     return {
         format: null,
         topLeftBestDiff,
         topRightBottomLeftBestDiff,
+        topLeftCorrectedFormat,
+        topRightBottomLeftCorrectedFormat,
     };
 }
 function getDataBlocks(codewords, version, ecLevel) {
@@ -330,7 +364,7 @@ function decodeMatrix(matrix, doCorrection = true) {
     let anyBlockFailed = false;
     for (let i = 0; i < dataBlocks.length; i++) {
         const dataBlock = dataBlocks[i];
-        const decodeRes = decodeWASM(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
+        const decodeRes = decodeWASM(Uint8Array.from(dataBlock.codewords), dataBlock.codewords.length - dataBlock.numDataCodewords);
         // const bytesCorrected = rsDecodeExpected(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
         const bytesCorrected = decodeRes["bytesCorrected"];
         decodeRes["errors"];
