@@ -43,7 +43,7 @@
     "vitest": "^1.6.0"
   },
   "scripts": {
-    "prebuild": "rimraf dist && git submodule update --init --recursive --remote && cd ./src/decoder/reedsolomon/wasm && make all",
+    "prebuild": "rimraf dist",
     "build": "rollup --config",
     "watch": "rollup --config --watch",
     "test": "vitest",
