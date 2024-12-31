@@ -49,5 +49,8 @@
     "test": "vitest",
     "lint": "tslint --project .",
     "generate-test-data": "ts-node --project tests/tsconfig.json tests/generate-test-data.ts"
+  },
+  "dependencies": {
+    "rsiscool": "github:Xiione/rsiscool#cf19b21b92b1"
   }
 }

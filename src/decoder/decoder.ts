@@ -522,8 +522,10 @@ function decodeMatrix(matrix: BitMatrix, doCorrection = true): DecodedQR {
       resultBytes[resultIndex++] = bytesCorrected["get"](i);
       // resultBytes[resultIndex++] = bytesCorrected[i];
     }
+
+    dataBlock.codewordsCorrected.length = dataBlock.codewords.length;
     for (let i = 0; i < dataBlock.codewords.length; i++) {
-      dataBlock.codewordsCorrected.push(bytesCorrected["get"](i));
+      dataBlock.codewordsCorrected[i] = bytesCorrected["get"](i);
     }
     bytesCorrected["delete"]();
   }

@@ -1,29 +1,21 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
-// @ts-ignore
-import rsiscool from "./wasm/rsiscool.js";
+import { createModule, type MainModule } from "rsiscool";
 
-let wasmModule: any = null;
-let moduleLoading: Promise<any> = null;
+let wasmModule: MainModule = await createModule();
 
-export async function initDecoder() {
-  if (!getDecoderInitialized()) {
-    if (moduleLoading) {
-      await moduleLoading;
-    } else {
-      moduleLoading = new Promise<void>((resolve, reject) => {
-        rsiscool().then((module: any) => {
-          wasmModule = module;
-          resolve();
-        }).catch(reject);
-      })
-      await moduleLoading;
-    }
+export function decodeWASM(bytes: Uint8Array, twoS: number) {
+  if (!wasmModule) {
+    throw new Error("WASM module not yet initialized");
   }
+  return wasmModule["decodeWASM"](bytes, twoS);
 }
 
-export function getDecoderInitialized() {
-  return !!wasmModule;
+export function validateWASM(bytes: Uint8Array, twoS: number) {
+  if (!wasmModule) {
+    throw new Error("WASM module not yet initialized");
+  }
+  return wasmModule["validateWASM"](bytes, twoS);
 }
 
 function runEuclideanAlgorithm(
@@ -188,18 +180,4 @@ export function decodeJS(bytes: number[], twoS: number) {
   }
 
   return outputBytes;
-}
-
-export function decodeWASM(bytes: Uint8Array, twoS: number) {
-  if (!wasmModule) {
-    throw new Error("WASM module not yet initialized");
-  }
-  return wasmModule["decodeWASM"](bytes, twoS);
-}
-
-export function validateWASM(bytes: Uint8Array, twoS: number) {
-  if (!wasmModule) {
-    throw new Error("WASM module not yet initialized");
-  }
-  return wasmModule["validateWASM"](bytes, twoS);
 }
