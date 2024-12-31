@@ -5,7 +5,7 @@ export default {
         'index': 'src/index.ts',
         'BitMatrix': 'src/BitMatrix.ts',
         'locator/index': 'src/locator/index.ts',
-        'decoder/index': 'src/decoder/decoder.ts',
+        'decoder/index': 'src/decoder/index.ts',
         'decoder/version': 'src/decoder/version.ts',
         'decoder/decodeData/index': 'src/decoder/decodeData/index.ts',
         'decoder/decodeData/BitStream': 'src/decoder/decodeData/BitStream.ts',

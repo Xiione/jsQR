@@ -2,7 +2,7 @@ import { binarize } from "./binarizer";
 import { BitMatrix } from "./BitMatrix";
 import { Chunks } from "./decoder/decodeData";
 import { StreamInfo } from "./decoder/decodeData/BitStream";
-import { decode } from "./decoder/decoder";
+import { decode } from "./decoder";
 import { extract } from "./extractor";
 import { locate, Point } from "./locator";
 
