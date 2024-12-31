@@ -508,26 +508,21 @@ function decodeMatrix(matrix: BitMatrix, doCorrection = true): DecodedQR {
     );
 
     // const bytesCorrected = rsDecodeExpected(dataBlock.codewords, dataBlock.codewords.length - dataBlock.numDataCodewords);
-    const bytesCorrected = decodeRes["bytesCorrected"];
-    const errors = decodeRes["errors"];
-    if (errors >= 0) {
-      // decodeResult.blockErrors[i] = errors;
-    }
+    const { errors, bytesCorrected } = decodeRes;
     if (!bytesCorrected) {
       anyBlockFailed = true;
       continue;
     }
 
     for (let i = 0; i < dataBlock.numDataCodewords; i++) {
-      resultBytes[resultIndex++] = bytesCorrected["get"](i);
-      // resultBytes[resultIndex++] = bytesCorrected[i];
+      resultBytes[resultIndex++] = bytesCorrected.get(i);
     }
 
     dataBlock.codewordsCorrected.length = dataBlock.codewords.length;
     for (let i = 0; i < dataBlock.codewords.length; i++) {
-      dataBlock.codewordsCorrected[i] = bytesCorrected["get"](i);
+      dataBlock.codewordsCorrected[i] = bytesCorrected.get(i);
     }
-    bytesCorrected["delete"]();
+    bytesCorrected.delete();
   }
   if (anyBlockFailed) {
     // return decodeResult;

@@ -8,14 +8,14 @@ export function decodeWASM(bytes: Uint8Array, twoS: number) {
   if (!wasmModule) {
     throw new Error("WASM module not yet initialized");
   }
-  return wasmModule["decodeWASM"](bytes, twoS);
+  return wasmModule.decodeWASM(bytes, twoS);
 }
 
 export function validateWASM(bytes: Uint8Array, twoS: number) {
   if (!wasmModule) {
     throw new Error("WASM module not yet initialized");
   }
-  return wasmModule["validateWASM"](bytes, twoS);
+  return wasmModule.validateWASM(bytes, twoS);
 }
 
 function runEuclideanAlgorithm(
