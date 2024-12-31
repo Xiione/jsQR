@@ -2,7 +2,7 @@ import typescript from 'rollup-plugin-typescript2';
 
 export default {
     input: {
-        'jsQR': 'src/index.ts',
+        'index': 'src/index.ts',
         'BitMatrix': 'src/BitMatrix.ts',
         'locator/index': 'src/locator/index.ts',
         'decoder/index': 'src/decoder/decoder.ts',
