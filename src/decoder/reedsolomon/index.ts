@@ -1,8 +1,8 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
-import { createModule, type MainModule } from "rsiscool";
+import { createModule } from "rsiscool";
 
-let wasmModule: MainModule = await createModule();
+const wasmModule = await createModule();
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
   if (!wasmModule) {
