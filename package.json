@@ -35,7 +35,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "rsiscool": "github:Xiione/rsiscool#7eac76de8956"
+    "rsiscool": "github:Xiione/rsiscool"
   },
   "devDependencies": {
     "@rollup/plugin-wasm": "^6.2.2",
