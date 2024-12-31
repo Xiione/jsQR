@@ -1,8 +1,17 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 import { createModule } from "rsiscool";
+import { MainModule } from "rsiscool/rsiscool";
 
-const wasmModule = await createModule();
+let wasmModule: MainModule;
+let wasmModuleLoading: Promise<MainModule>;
+
+export async function initWASM() {
+  if (wasmModule) return;
+  await (wasmModuleLoading ??= createModule().then(
+    (module) => (wasmModule = module),
+  ));
+}
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
   if (!wasmModule) {
@@ -126,7 +135,7 @@ function findErrorMagnitudes(
   return result;
 }
 
-export function decodeJS(bytes: number[], twoS: number) {
+export function decodeJS(bytes: number[], twoS: number): Uint8ClampedArray {
   const outputBytes = new Uint8ClampedArray(bytes.length);
   outputBytes.set(bytes);
 

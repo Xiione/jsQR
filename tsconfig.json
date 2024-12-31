@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noImplicitAny": true,
-    "target": "es2017",
+    "target": "esnext",
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
