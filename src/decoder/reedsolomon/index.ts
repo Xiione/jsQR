@@ -1,16 +1,16 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
-import { createModule } from "rsiscool";
+import { createModule, createWorkersModule } from "rsiscool";
 import { MainModule } from "rsiscool/rsiscool";
 
 let wasmModule: MainModule;
 let wasmModuleLoading: Promise<MainModule>;
 
-export async function initWASM() {
+export async function initWASM({ initWorkersModule = false } = {}) {
   if (wasmModule) return;
-  await (wasmModuleLoading ??= createModule().then(
-    (module) => (wasmModule = module),
-  ));
+  await (wasmModuleLoading ??= (
+    !initWorkersModule ? createModule() : createWorkersModule()
+  ).then((module) => (wasmModule = module)));
 }
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
