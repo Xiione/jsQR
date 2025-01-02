@@ -17,6 +17,7 @@ export default defineConfig({
     target: ["chrome89", "safari15", "firefox89"],
   },
   build: {
+    minify: false,
     assetsInlineLimit: 0,
     target: ["chrome89", "safari15", "firefox89"],
     rollupOptions: {
