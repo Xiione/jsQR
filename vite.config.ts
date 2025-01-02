@@ -1,8 +1,6 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 
-import typescript2 from "rollup-plugin-typescript2"
-
 const rollupInput = {
   index: "src/index.ts",
   BitMatrix: "src/BitMatrix.ts",
@@ -19,14 +17,11 @@ export default defineConfig({
     target: ["chrome89", "safari15", "firefox89"],
   },
   build: {
-    lib: {
-      entry: Object.values(rollupInput).map((path) => resolve(__dirname, path)),
-      name: "index",
-      formats: ["es"],
-    },
+    assetsInlineLimit: 0,
     target: ["chrome89", "safari15", "firefox89"],
     rollupOptions: {
       input: rollupInput,
+      external: ["rsiscol/rsiscool.wasm"],
       output: {
         dir: "dist",
         format: "esm",
