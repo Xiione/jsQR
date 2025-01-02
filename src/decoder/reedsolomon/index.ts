@@ -1,25 +1,25 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 import type { MainModule } from "rsiscool/rsiscool";
-import { createModule, createWorkersModule } from "rsiscool";
+import { createModule } from "rsiscool";
 
 let wasmModule: MainModule;
 let wasmModuleLoading: Promise<MainModule>;
 
+// @ts-expect-error can't find tsconfig option that makes this work like in qriscool
+import initInlined from "rsiscool/rsiscool.wasm?init";
+
 export async function initWASM(mod?: WebAssembly.Module) {
   if (wasmModule) return;
 
-  await (wasmModuleLoading ??= (
-    !mod
-      ? createModule()
-      : createWorkersModule({
-          instantiateWasm: (imports: any, callback: any) => {
-            const instance = new WebAssembly.Instance(mod, imports);
-            callback(instance);
-            return instance.exports;
-          },
-        })
-  ).then((module) => (wasmModule = module)));
+  await (wasmModuleLoading ??= createModule().then(
+    (module) => (wasmModule = module),
+  ));
+}
+
+export async function initWASMInlined() {
+  if (wasmModule) return;
+  wasmModule = (await initInlined()).exports
 }
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {

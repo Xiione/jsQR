@@ -1,3 +1,4 @@
+import { resolve } from "path";
 import { defineConfig } from "vite";
 
 const rollupInput = {
@@ -17,7 +18,11 @@ export default defineConfig({
   },
   build: {
     minify: false,
-    assetsInlineLimit: 0,
+    lib: {
+      entry: Object.values(rollupInput).map((path) => resolve(__dirname, path)),
+      name: "index",
+      formats: ["es"],
+    },
     target: ["chrome89", "safari15", "firefox89"],
     rollupOptions: {
       input: rollupInput,
