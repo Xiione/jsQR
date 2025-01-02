@@ -28,6 +28,7 @@ export default defineConfig({
         format: "esm",
         entryFileNames: "[name].js",
       },
+      preserveEntrySignatures: "exports-only"
     },
   },
 });
