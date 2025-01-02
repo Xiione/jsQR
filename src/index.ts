@@ -1,10 +1,10 @@
 import { binarize } from "./binarizer";
 import { BitMatrix } from "./BitMatrix";
-import { Chunks } from "./decoder/decodeData";
-import { StreamInfo } from "./decoder/decodeData/BitStream";
+import type { Chunks } from "./decoder/decodeData";
+import type { StreamInfo } from "./decoder/decodeData/BitStream";
 import { decode } from "./decoder";
 import { extract } from "./extractor";
-import { locate, Point } from "./locator";
+import { locate, type Point } from "./locator";
 
 export interface QRCode {
   binaryData: number[];

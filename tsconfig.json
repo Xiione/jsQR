@@ -2,12 +2,12 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noImplicitAny": true,
     "target": "esnext",
     "declaration": true,
     "outDir": "./dist",
-    "newLine": "LF",
     "moduleDetection": "force"
     //"lib": ["ES6"]
   },

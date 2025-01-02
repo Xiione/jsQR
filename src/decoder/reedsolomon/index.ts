@@ -1,6 +1,6 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
-import { MainModule } from "rsiscool/rsiscool";
+import type { MainModule } from "rsiscool/rsiscool";
 
 // @ts-expect-error can't find tsconfig option that makes this work like in qriscool
 import initModule from "rsiscool/rsiscool.wasm?init";

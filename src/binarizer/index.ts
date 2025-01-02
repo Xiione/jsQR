@@ -1,5 +1,5 @@
 import { BitMatrix } from "../BitMatrix";
-import { GreyscaleWeights } from "../index";
+import { type GreyscaleWeights } from "../index";
 
 const REGION_SIZE = 8;
 const MIN_DYNAMIC_RANGE = 24;

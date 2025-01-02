@@ -1,11 +1,11 @@
 import { BitMatrix } from "../BitMatrix";
-import { Point } from "../Point";
-import { decode as decodeData, DecodedQR } from "./decodeData";
+import type { Point } from "../locator";
+import { decode as decodeData, type DecodedQR } from "./decodeData";
 import {
   decodeWASM as rsDecode,
   decodeJS as rsDecodeExpected,
 } from "./reedsolomon";
-import { Version, VERSIONS } from "./version";
+import { type Version, VERSIONS } from "./version";
 
 // tslint:disable:no-bitwise
 function numBitsDiffering(x: number, y: number) {

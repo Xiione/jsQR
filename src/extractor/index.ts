@@ -1,5 +1,5 @@
 import { BitMatrix } from "../BitMatrix";
-import { Point, QRLocation } from "../locator";
+import type { Point, QRLocation } from "../locator";
 
 interface PerspectiveTransform {
   a11: number;

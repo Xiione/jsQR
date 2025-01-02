@@ -1,5 +1,5 @@
 // tslint:disable:no-bitwise
-import { BitStream, StreamInfo, StreamMapping } from "./BitStream";
+import { BitStream, type StreamInfo, StreamMapping } from "./BitStream";
 
 export interface Chunk {
   type: Mode;

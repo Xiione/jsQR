@@ -1,5 +1,3 @@
-import { Point } from "./Point";
-
 export class BitMatrix {
   public static createEmpty(width: number, height: number) {
     const mat = new BitMatrix(width, height);
