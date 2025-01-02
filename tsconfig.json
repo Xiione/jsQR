@@ -2,15 +2,14 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "bundler",
+    "isolatedModules": true,
     "noImplicitAny": true,
     "target": "esnext",
     "declaration": true,
-    "sourceMap": true,
     "outDir": "./dist",
-    "newLine": "LF"
+    "newLine": "LF",
+    "moduleDetection": "force"
     //"lib": ["ES6"]
   },
-  "files": [
-    "./src/index.ts"
-  ]
+  "files": ["./src/index.ts"]
 }
