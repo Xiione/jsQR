@@ -21,7 +21,7 @@ export default defineConfig({
     target: ["chrome89", "safari15", "firefox89"],
     rollupOptions: {
       input: rollupInput,
-      external: ["rsiscol/rsiscool.wasm"],
+      external: ["rsiscool"],
       output: {
         dir: "dist",
         format: "esm",
