@@ -1,11 +1,28 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 import type { MainModule } from "rsiscool/rsiscool";
+import { createWorkersModule } from "rsiscool";
 
 // @ts-expect-error can't find tsconfig option that makes this work like in qriscool
 import initModule from "rsiscool/rsiscool.wasm?init";
 
-const wasmModule: MainModule = (await initModule()).exports;
+let wasmModule: MainModule;
+try {
+  wasmModule = (await initModule()).exports;
+} catch (e) {
+  console.error(e);
+}
+
+export async function initWASM(mod: WebAssembly.Module) {
+  if (wasmModule) return;
+  wasmModule = await createWorkersModule({
+    instantiateWasm: (imports: any, callback: any) => {
+      const instance = new WebAssembly.Instance(mod, imports);
+      callback(instance);
+      return instance.exports;
+    },
+  });
+}
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
   if (!wasmModule) {
