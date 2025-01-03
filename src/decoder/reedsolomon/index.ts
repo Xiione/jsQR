@@ -1,24 +1,25 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 import type { MainModule } from "rsiscool/rsiscool";
-import type { MainModule as MainModuleWorkers } from "rsiscool/rsiscool_workers";
 import { createModule, createWorkersModule } from "rsiscool";
 
-let wasmModule: MainModule | MainModuleWorkers;
-let wasmModuleLoading: Promise<MainModule | MainModuleWorkers>;
+let wasmModule: MainModule;
+let wasmModuleLoading: Promise<MainModule>;
 
-export async function initWASM() {
+export async function initWASM(mod?: WebAssembly.Module) {
   if (wasmModule) return;
-  await (wasmModuleLoading ??= createModule().then(
-    (module) => (wasmModule = module),
-  ));
-}
 
-export async function initWASMInlined() {
-  if (wasmModule) return;
-  await (wasmModuleLoading ??= createWorkersModule().then(
-    (module) => (wasmModule = module),
-  ));
+  await (wasmModuleLoading ??= (
+    !mod
+      ? createModule()
+      : createWorkersModule({
+          instantiateWasm: (imports: any, callback: any) => {
+            const instance = new WebAssembly.Instance(mod, imports);
+            callback(instance);
+            return instance.exports;
+          },
+        })
+  ).then((module) => (wasmModule = module)));
 }
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
