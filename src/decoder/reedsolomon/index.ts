@@ -7,7 +7,9 @@ import { createModule, createWorkersModule } from "rsiscool";
 let wasmModule: MainModule | WorkersMainModule;
 let wasmModuleLoading: Promise<MainModule | WorkersMainModule>;
 
-type initFunc = (imports: WebAssembly.Imports) => Promise<WebAssembly.Instance>;
+type initFunc = (
+  imports: WebAssembly.Imports,
+) => Promise<{ instance: WebAssembly.Instance }>;
 
 export async function initWASM(initModule?: initFunc) {
   if (wasmModule) return;
@@ -17,7 +19,7 @@ export async function initWASM(initModule?: initFunc) {
       ? createModule()
       : createWorkersModule({
           instantiateWasm: async (imports: any, callback: any) => {
-            const instance = await initModule(imports);
+            const { instance } = await initModule({ ...imports });
             callback(instance);
             return instance.exports;
           },
