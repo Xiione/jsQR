@@ -1,10 +1,11 @@
 import GenericGF, { addOrSubtractGF } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 import type { MainModule } from "rsiscool/rsiscool";
+import type { MainModule as WorkersMainModule } from "rsiscool/rsiscool_workers";
 import { createModule, createWorkersModule } from "rsiscool";
 
-let wasmModule: MainModule;
-let wasmModuleLoading: Promise<MainModule>;
+let wasmModule: MainModule | WorkersMainModule;
+let wasmModuleLoading: Promise<MainModule | WorkersMainModule>;
 
 export async function initWASM(mod?: WebAssembly.Module) {
   if (wasmModule) return;
