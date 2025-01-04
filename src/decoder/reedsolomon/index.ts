@@ -7,20 +7,57 @@ import { createModule, createWorkersModule } from "rsiscool";
 let wasmModule: MainModule | WorkersMainModule;
 let wasmModuleLoading: Promise<MainModule | WorkersMainModule>;
 
-export async function initWASM(module?: WebAssembly.Module) {
+type initFunc = (
+  imports: WebAssembly.Imports,
+) => Promise<{ instance: WebAssembly.Instance }>;
+
+// export async function initWASM(module?: WebAssembly.Module) {
+export async function initWASM(initModule?: initFunc) {
   if (wasmModule) return;
 
+  // if (wasmModuleLoading) {
+  //   wasmModule = await wasmModuleLoading;
+  // } else {
+  //   wasmModuleLoading = !module
+  //     ? createModule()
+  //     : createWorkersModule({
+  //         instantiateWasm: (imports: any, callback: any) => {
+  //           const instance = new WebAssembly.Instance(module, imports);
+  //           callback(instance);
+  //           return instance.exports;
+  //         },
+  //       });
+  //   wasmModule = await wasmModuleLoading;
+  //   console.log(wasmModule);
+  // }
+
+  // too much magic!
+  // nvm its perfect
+  // await (wasmModuleLoading ??= (
+  //   !module
+  //     ? createModule()
+  //     : createWorkersModule({
+  //         instantiateWasm: (imports: any, callback: any) => {
+  //           const instance = new WebAssembly.Instance(module, imports);
+  //           callback(instance);
+  //           return instance.exports;
+  //         },
+  //       })
+  // ).then((module) => (wasmModule = module)));
   await (wasmModuleLoading ??= (
-    !module
+    !initModule
       ? createModule()
       : createWorkersModule({
-          instantiateWasm: (imports: any, callback: any) => {
-            const instance = new WebAssembly.Instance(module, imports);
+          instantiateWasm: async (imports: any, callback: any) => {
+            const { instance } = await initModule({ ...imports });
             callback(instance);
             return instance.exports;
           },
         })
-  ).then((module) => (wasmModule = module)));
+  ).then((module) => {
+    console.log("[rsiscool] WASM module initialized");
+    return (wasmModule = module);
+  }));
 }
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
