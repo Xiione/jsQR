@@ -7,57 +7,44 @@ import { createModule, createWorkersModule } from "rsiscool";
 let wasmModule: MainModule | WorkersMainModule;
 let wasmModuleLoading: Promise<MainModule | WorkersMainModule>;
 
-type initFunc = (
-  imports: WebAssembly.Imports,
-) => Promise<{ instance: WebAssembly.Instance }>;
+// type initFunc = (
+//   imports: WebAssembly.Imports,
+// ) => Promise<{ instance: WebAssembly.Instance }>;
 
-// export async function initWASM(module?: WebAssembly.Module) {
-export async function initWASM(initModule?: initFunc) {
+export async function initWASM(module?: WebAssembly.Module) {
+  // export async function initWASM(initModule?: initFunc) {
   if (wasmModule) return;
-
-  // if (wasmModuleLoading) {
-  //   wasmModule = await wasmModuleLoading;
-  // } else {
-  //   wasmModuleLoading = !module
-  //     ? createModule()
-  //     : createWorkersModule({
-  //         instantiateWasm: (imports: any, callback: any) => {
-  //           const instance = new WebAssembly.Instance(module, imports);
-  //           callback(instance);
-  //           return instance.exports;
-  //         },
-  //       });
-  //   wasmModule = await wasmModuleLoading;
-  //   console.log(wasmModule);
-  // }
 
   // too much magic!
   // nvm its perfect
-  // await (wasmModuleLoading ??= (
-  //   !module
-  //     ? createModule()
-  //     : createWorkersModule({
-  //         instantiateWasm: (imports: any, callback: any) => {
-  //           const instance = new WebAssembly.Instance(module, imports);
-  //           callback(instance);
-  //           return instance.exports;
-  //         },
-  //       })
-  // ).then((module) => (wasmModule = module)));
   await (wasmModuleLoading ??= (
-    !initModule
+    !module
       ? createModule()
       : createWorkersModule({
-          instantiateWasm: async (imports: any, callback: any) => {
-            const { instance } = await initModule({ ...imports });
+          instantiateWasm: (imports: any, callback: any) => {
+            const instance = new WebAssembly.Instance(module, imports);
             callback(instance);
             return instance.exports;
           },
         })
-  ).then((module) => {
+  ).then((instantiated) => {
     console.log("[rsiscool] WASM module initialized");
-    return (wasmModule = module);
+    return (wasmModule = instantiated);
   }));
+  // await (wasmModuleLoading ??= (
+  //   !initModule
+  //     ? createModule()
+  //     : createWorkersModule({
+  //         instantiateWasm: async (imports: any, callback: any) => {
+  //           const { instance } = await initModule({ ...imports });
+  //           callback(instance);
+  //           return instance.exports;
+  //         },
+  //       })
+  // ).then((module) => {
+  //   console.log("[rsiscool] WASM module initialized");
+  //   return (wasmModule = module);
+  // }));
 }
 
 export function decodeWASM(bytes: Uint8Array, twoS: number) {
