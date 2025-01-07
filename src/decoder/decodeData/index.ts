@@ -157,7 +157,7 @@ export const AlphanumericCharacterCodes = [
   "X",
   "Y",
   "Z",
-  "%20",
+  " ",
   "$",
   "%",
   "*",
@@ -188,20 +188,19 @@ export function decodeAlphanumeric(
 
     const a = Math.floor(v / 45);
     const b = v % 45;
+    const ca = AlphanumericCharacterCodes[a];
+    const cb = AlphanumericCharacterCodes[b];
 
-    if (!textOnly)
-      bytes.push(
-        AlphanumericCharacterCodes[a].charCodeAt(0),
-        AlphanumericCharacterCodes[b].charCodeAt(0),
-      );
-    text += AlphanumericCharacterCodes[a] + AlphanumericCharacterCodes[b];
+    if (!textOnly) bytes.push(ca.charCodeAt(0), cb.charCodeAt(0));
+    text += (ca === " " ? "%20" : ca) + (cb === " " ? "%20" : cb);
     length -= 2;
   }
 
   if (length === 1) {
     const a = stream.readBits(6, Mode.Alphanumeric);
-    if (!textOnly) bytes.push(AlphanumericCharacterCodes[a].charCodeAt(0));
-    text += AlphanumericCharacterCodes[a];
+    const ca = AlphanumericCharacterCodes[a];
+    if (!textOnly) bytes.push(ca.charCodeAt(0));
+    text += ca === " " ? "%20" : ca;
   }
 
   if (!textOnly) return { bytes, text };
@@ -327,7 +326,10 @@ export function decode(data: Uint8ClampedArray, version: number): DecodedQR {
         text: numericResult.text,
       });
     } else if (mode === ModeByte.Alphanumeric) {
-      const alphanumericResult = decodeAlphanumeric(stream, size) as DecodeTextResult;
+      const alphanumericResult = decodeAlphanumeric(
+        stream,
+        size,
+      ) as DecodeTextResult;
       result.text += alphanumericResult.text;
       result.bytes.push(...alphanumericResult.bytes);
       result.chunks.push({
