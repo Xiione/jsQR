@@ -157,7 +157,7 @@ export const AlphanumericCharacterCodes = [
   "X",
   "Y",
   "Z",
-  " ",
+  "%20",
   "$",
   "%",
   "*",
