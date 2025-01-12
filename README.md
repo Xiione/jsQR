@@ -1,5 +1,5 @@
 # jsQR
-This fork is a heavily modified version of danimoh's fork for integration with qriscool. My modifications are not documented in this README. Use at your own risk!!
+This fork is a heavily modified version of danimoh's fork for integration with [qris.cool](https://qris.cool). My modifications are not documented in this README. Use at your own risk!!
 
 ## Installation
 The below assumes you're running MacOS on Apple Silicon.
